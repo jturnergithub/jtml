@@ -1,0 +1,38 @@
+.example > * {
+    margin         : 4px;
+    vertical-align : top;
+}
+
+#scrolling {
+    width : 90px;
+}
+
+#switchable button {
+    display : block;
+    width   : 90px;
+}
+
+div.label {
+    display : inline-block;
+    width   : 90px;
+}
+
+#employee-details {
+    margin-bottom : 6px;
+    padding       : 4px;
+    border        : 1px solid black;
+    border-radius : 3px;
+    box-shadow    : 3px 3px lightgray;
+}
+
+.jtml-form-entry {
+    padding : 2px;
+}
+
+.jtml-form-label {
+    font-size : smaller;
+}
+
+.jtml-form-separator {
+    display : none;
+}

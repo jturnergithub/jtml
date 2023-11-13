@@ -1,0 +1,22 @@
+<html>
+    <head>
+        <title>React Demo</title>
+    </head>
+    <body>
+        <script type="module">
+
+            import {button, div, h1} from "../../jtml/src/jtml.js";
+            
+            function handleClick(btn) {
+                btn.increment("clickCt");
+            }
+
+            div(
+                h1("Counters that update together"),
+                button().bind("clickCt", 0).click(handleClick).disabled("clickCt", clickCt => clickCt % 2 === 1),
+                button().bind("clickCt").click(handleClick)
+            ).addToDOM();
+           
+        </script>
+    </body>
+</html>

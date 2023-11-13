@@ -1,0 +1,15 @@
+{
+  "name": "jtml",
+  "version": "1.0.0",
+  "description": "The JTML (Javascript Text Markup Language) framework",
+  "main": "index.js",
+  "directories": {
+    "example": "examples",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "JT",
+  "license": "ISC"
+}

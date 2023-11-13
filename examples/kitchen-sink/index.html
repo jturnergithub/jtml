@@ -1,0 +1,48 @@
+<html>
+    <head>
+        <title>Foo</title>
+        <!-- <script src="/JT/JTML/Tag.js" type="module"></script> -->
+    </head>
+
+    <body id="body">
+        <script type="module">
+            import {a, br, button, checkbox, div, h1, hr, li, ol, radio, span, text, textField, ul} from "./jtml.js";
+
+            let html = div()._(
+                h1("Slideshow"),
+                "=========",
+                div()._(
+                    "slides go here: ",
+                    text("nobody home").bind("n", 0)
+                ),
+                button("Prev")
+                    .click(tag => tag.scope().decrement("n"))
+                    .disabled("n", 0),
+                button("Next")
+                    .click(tag => tag.scope().increment("n"))
+                    .disabled("n", 3),
+                div()._(
+                    "Look at me!"
+                )
+                    .hidden("hide")
+                    .style("backgroundColor", "yellow"),
+                br(),
+                checkbox().bind("hide"),
+                "Hide text",
+                br(),
+                textField().bind("name"),
+                "You typed ", text("").bind("name"),
+                radio("choice")._(
+                    "Yes",
+                    "No"
+                ),
+                ol()._(
+                    "item 1",
+                    "item 2",
+                    "item 3"
+                )
+            );
+            html.appendTo(document.getElementById("body"));
+        </script>
+    </body>
+</html>

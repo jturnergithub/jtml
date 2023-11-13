@@ -1,0 +1,79 @@
+<html>
+    <head>
+        <title>Example: Basic Bindings</title>
+        <link rel="stylesheet" href="../common/common.css"/>
+        <link rel="stylesheet" href="./bindings.css"/>
+    </head>
+    <body id="body">
+        <h1>Basic Bindings</h1>
+        <script type="module">
+            import {br, button, checkbox, div, h1, h2, scope, textField, span} from "../../src/jtml.js";
+
+            div(
+                h2("Show/Hide"),
+                div(
+                    div(
+                        checkbox().bind("hide-red"), "Hide the red box"
+                    ).classes("left inline-block"),
+                    div(
+                        div().classes("red square").hidden("hide-red"),
+                    ).classes("right inline-block")
+                ),
+                div(
+                    div(
+                        checkbox().bind("hide-green"), "Hide the green box"
+                    ).classes("left inline-block"),
+                    div(
+                        div().classes("green square").hidden("hide-green"),
+                    ).classes("right inline-block")
+                )
+            ).classes("example inline-block").addToDOM();
+
+            div(
+                h2("Enable/Disable"),
+                div(
+                    div(
+                        checkbox().bind("disable-hello"), "Disable 'Hello'"
+                    ).classes("left inline-block"),
+                    button("Hello").disabled("disable-hello").click(() => alert("Nice to meet you."))
+                ),
+                div(
+                    div(
+                        textField().bind("message"),
+                        br(),
+                        span("Type to enable the button").classes("tiny")
+                    ).classes("left inline-block"),
+                    button("Alert")
+                        .disabled("message", message => !message || message.length === 0)
+                        .click(tag => alert("You typed: '" + tag.get("message") + "'"))
+                        .click(tag => tag.set("message", ""))
+                )
+            ).classes("example inline-block").addToDOM();
+
+            div (
+                h2("Nested Scopes"),
+                div(
+                    "This is the outer <div>. Every 'bind' call in it refers to the default (shared) binder.",
+                    br(),
+                    checkbox().bind("checked"),
+                    "The outer checkbox is ",
+                    span("not ").hidden("checked"),
+                    "checked",
+                    br(),
+                    div (
+                        ...scope().isolated().multiple(
+                            "This is a nested scope. Every 'bind' call in it refers to a local binder.",
+                            br(),
+                            checkbox().bind("checked"),
+                            "The inner checkbox is ",
+                            span("not ").hidden("checked"),
+                            "checked"
+                        )
+                    ).classes("scope"),
+                    "This works even though both checkboxes are bound to the key 'checked'."
+                ).classes("scope")
+            ).classes("example inline-block").addToDOM();
+
+        </script>
+    </body>
+</html>

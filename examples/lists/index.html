@@ -1,0 +1,68 @@
+<html>
+    <head>
+        <title>Example: Lists</title>
+        <link rel="stylesheet" href="../common/common.css"/>
+        <link rel="stylesheet" href="./lists.css"/>
+    </head>
+    <body id="body">
+        <h1>Example: Lists</h1>
+        <script type="module">
+
+            import {JTMLConstants, SelectionMode, button, chooser, div, h2, hr, li, span, strong, text, textField, ul} from "../../src/jtml.js";
+            // TEMPORARY
+
+            // div(
+            //     h2("Static Lists"),
+            //     ul("Static 1", "Static 2", "Static 3")
+            // ).classes("example inline-block").addToDOM();
+
+            // By creating the individual examples separately, and adding them to
+            // the DOM separately, we ensure that each example has its own binding
+            // context. That means that if example A binds to a key named "itemList",
+            // we're still safe even if example B *also* binds to a key named "itemList".
+
+            import staticList from "./static.js";
+            staticList.classes("example inline-block narrow").addToDOM();
+            //
+            // import switchableList from "./switchable.js";
+            // switchableList("Switchable").classes("example inline-block narrow").addToDOM();
+            //
+            // import growableList from "./growable.js";
+            // growableList("Growable", "item1", "item2", "item3", "item4").classes("example inline-block narrow banded").addToDOM();
+
+            import exampleDiv from "../common/js/example.js";
+            exampleDiv("Single Select",
+                chooser(
+                    ul(
+                        "Hamburger",
+                        "Hot dog",
+                        "Kielbasa",
+                        "Chicken puck",
+                        "Veggie burger"
+                    ).classes("clickable no-bullet").bind("single-select")
+                )
+            ).classes("inline-block narrow").addToDOM();
+
+            let condiments = chooser(
+                ul(
+                    "Ketchup",
+                    "Mustard",
+                    "Cheese",
+                    "Lettuce",
+                    "Pickles",
+                    "Onions"
+                ).classes("clickable"),
+                SelectionMode.MULTIPLE
+            ).bind("multi-select");
+            exampleDiv("Multi-Select", condiments).classes("inline-block narrow").addToDOM();
+
+            // import megillahList from "./megillah.js";
+            // exampleDiv("The Whole Megillah", ...megillahList())
+            //     .id("megillah-div")
+            //     .classes("medium")
+            //     .addToDOM();
+
+        </script>
+    </body>
+
+</html>

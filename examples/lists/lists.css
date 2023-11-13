@@ -1,0 +1,52 @@
+li {
+    padding : 3px;
+}
+
+.narrow {
+    width : 12%;
+}
+
+.medium {
+    width : 40%;
+}
+
+.clickable {
+    cursor : pointer;
+}
+
+.jtml-selected {
+    border-color : black;
+    background-color : orange;
+    font-weight : bold;
+}
+
+.monicker {
+    width : 70%;
+}
+
+.banded li.jtml-even {
+    background-color : palegoldenrod;
+}
+
+#megillah li {
+    border : 1px solid lightgray;
+    margin : 2px;
+}
+
+#megillah-div button img {
+    width          : 16px;
+    height         : 16px;
+    vertical-align : sub;
+}
+
+#megillah-div button:disabled img {
+    opacity : 0.3;
+}
+
+#add-btn {
+    margin : 4px;
+}
+
+#add-btn img {
+     padding-left : 4px;
+}

@@ -1,0 +1,32 @@
+<html>
+    <head>
+        <title>Hello, World!</title>
+    </head>
+    <body id="body">
+        <script type="module">
+            import {br, button, checkbox, div, span} from "../../src/jtml.js";
+            import Binder from "../../src/Binder.js";
+
+            let html = div(
+                "This is the outer div. Every 'bind' call in it refers to the default (global) binder.",
+                br(),
+                checkbox().bind("checked"),
+                "The checkbox is ",
+                span("not ").hidden("checked"),
+                "checked",
+                div().style("border", "1px solid black")._(
+                    "This is a nested scope. Every 'bind' call in it refers to a separate local binder.",
+                    br(),
+                    checkbox().bind("checked"),
+                    "The checkbox is ",
+                    span("not ").hidden("checked"),
+                    "checked"
+                ).binder(new Binder()),
+                "Now we're back in the outer scope."
+            );
+
+            html.addToDOM();
+
+        </script>
+    </body>
+</html>

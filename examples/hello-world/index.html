@@ -1,0 +1,37 @@
+<html>
+    <head>
+        <title>Hello, World!</title>
+        <link rel="stylesheet" href="../common/common.css"/>
+        <link rel="stylesheet" href="./hello.css"/>
+    </head>
+    <body id="body">
+        <script type="module">
+            import {a, br, div, h1, hr, span} from "../../src/jtml.js";
+
+            let body = document.getElementById("body");
+            let styles = {
+                backgroundColor : "yellow",
+                width : "320px",
+                margin : "10px",
+                padding : "10px"
+            };
+
+            h1("Hello, World!").addToDOM();
+            div(
+                "This is a vanilla <div> tag with text inside it. ",
+                "It has a black border because of the 'hello.css' stylesheet."
+            ).addToDOM();
+            div().styles(styles)._(
+                "This is a <div> tag. It is yellow because of a call to Tag.styles(). It contains some text. ",
+                hr(),
+                span("It also contains a gray <span>, right here. The <span> is gray because of a call to Tag.style().").style("backgroundColor", "lightgray"),
+                hr(),
+                "Finally, here are some links:", br(),
+                a("../bindings-1", "Basic Bindings"), br(),
+                a("../lists", "Lists")
+            ).addToDOM();
+
+
+        </script>
+    </body>
+</html>

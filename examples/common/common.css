@@ -1,0 +1,67 @@
+* {
+	font-family: Candara,Calibri,Segoe,Segoe UI,Optima,Arial,sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  background-image : linear-gradient(to right, dodgerblue, lightgray, white);
+  text-shadow : 1px 1px white;
+  padding : 0px 5px 0px 5px;
+}
+
+.inline-block {
+    display : inline-block;
+}
+
+ul.no-bullet {
+    list-style-type : none;
+}
+
+.reversed {
+    color : white;
+    background-color : black;
+}
+
+.green {
+    background-color : green;
+}
+
+.orange {
+    background-color : orange;
+}
+
+.red {
+    background-color : red;
+}
+
+.yellow {
+    background-color : yellow;
+}
+
+.outlined {
+    border : 1px solid black;
+}
+
+div.example {
+    border : 1px solid gray;
+    border-radius : 5px;
+    padding : 2px 5px 5px 5px;
+    margin : 5px;
+    vertical-align : top;
+}
+
+div.example h2 {
+    margin : 5px;
+}
+
+.jtml-form-label {
+    display : inline-block;
+}
+
+.jtml-chooser {
+    margin : 0px;
+    padding : 0px;
+}
+
+li.jtml-chooser-selectable {
+    list-style-type : none;  
+}

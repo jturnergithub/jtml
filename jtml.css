@@ -1,0 +1,85 @@
+.inline-block {
+    display : inline-block;
+}
+
+.top-aligned {
+    vertical-align : top;
+}
+
+.middle-aligned {
+    vertical-align : middle;
+}
+
+.centered-text {
+    text-align : center;
+}
+
+.black-border {
+    border : 1px solid black;
+}
+
+.rounded-corners {
+    border-radius : 8px;
+}
+
+.black {
+    background-color : black;
+    color : white;
+}
+
+.blue {
+    background-color : royalblue;
+    color : white;
+}
+
+.green {
+    background-color : green;
+    color : white;
+}
+
+.orange {
+    background-color : orange;
+    color : black;
+}
+
+.red {
+    background-color : red;
+    color : white
+}
+
+.purple {
+    background-color : purple;
+    color : white;
+}
+
+.white {
+    background-color : white;
+}
+
+.yellow {
+    background-color : gold;
+    color : black;
+}
+
+ul.no-bullet {
+    list-style-type : none;
+}
+
+.jtml-chooser {
+    margin : 0px;
+    padding : 0px;
+}
+
+li.jtml-chooser-selectable {
+    list-style-type : none;
+    padding-left : 0px;
+}
+
+.full-screen {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
