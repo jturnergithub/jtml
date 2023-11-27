@@ -6,7 +6,7 @@ let nextID = 0;
  * @returns 
  */
 export function isProxy(value) {
-    return typeof value === "object" && value !== null && value.__target;
+    return typeof value === "object" && value.__target;
 }
 
 export function proxify(binding, value) {
@@ -68,9 +68,6 @@ function objectProxy(binding, object) {
     if (isProxy(object)) {
         // This is paranoia, but it's the good kind.
         throw new Error("Nested proxy detected");
-    }
-    if (object === null) {
-        return object;
     }
     const id = nextID++;
     return new Proxy(object, {
