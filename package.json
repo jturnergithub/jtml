@@ -2,7 +2,7 @@
   "name": "jtml",
   "version": "1.0.0",
   "description": "The JTML (Javascript Text Markup Language) framework",
-  "main": "index.js",
+  "main": "examples/hello-world/index.html",
   "directories": {
     "example": "examples",
     "test": "test"
