@@ -1,0 +1,32 @@
+<html>
+    <head>
+        <title>JTML Documentation</title>
+        <link rel="stylesheet" href="../jtml.css"/>
+        <link rel="stylesheet" href="../examples/examples.css"/>
+        <link rel="stylesheet" href="./docs.css"/>
+        <link rel="icon" type="image/x-icon" href="./images/logo.gif">
+    </head>
+    <script type="module">
+        import {body, div, tabs} from "../jtml.js";
+        import header from "./header.js";
+        import intro from "./intro.js";
+        import basics from "./imports/basics.js";
+        import learn from "./learn/learn.js";
+        import api from "./api.js";
+        import faq from "./faq.js";
+
+        body(
+            header,
+            div(
+                tabs(
+                    ["Intro", intro],
+                    ["Getting started", basics],
+                    ["Learn", learn],
+                    ["API reference", api],
+                    ["JTML internals", "Coming soon(ish)"],
+                    ["FAQ", faq]
+                ).invoke(self => self.synonym("docs-selected-tab", self.keys.selection))
+            ).id("page")
+        );
+    </script>
+</html>

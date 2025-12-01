@@ -1,3 +1,7 @@
+.inline {
+    display : inline;
+}
+
 .inline-block {
     display : inline-block;
 }
@@ -14,65 +18,16 @@
     text-align : center;
 }
 
-.black-border {
-    border : 1px solid black;
+.right-text {
+    text-align : right;
 }
 
-.rounded-corners {
-    border-radius : 8px;
+.small-text {
+    font-size : small;
 }
 
-.black {
-    background-color : black;
-    color : white;
-}
-
-.blue {
-    background-color : royalblue;
-    color : white;
-}
-
-.green {
-    background-color : green;
-    color : white;
-}
-
-.orange {
-    background-color : orange;
-    color : black;
-}
-
-.red {
-    background-color : red;
-    color : white
-}
-
-.purple {
-    background-color : purple;
-    color : white;
-}
-
-.white {
-    background-color : white;
-}
-
-.yellow {
-    background-color : gold;
-    color : black;
-}
-
-ul.no-bullet {
-    list-style-type : none;
-}
-
-.jtml-chooser {
-    margin : 0px;
-    padding : 0px;
-}
-
-li.jtml-chooser-selectable {
-    list-style-type : none;
-    padding-left : 0px;
+.strikethrough {
+    text-decoration : line-through;
 }
 
 .full-screen {
@@ -82,4 +37,126 @@ li.jtml-chooser-selectable {
     left: 0;
     right: 0;
 }
+
+.black-border {
+    border : 1px solid black;
+}
+
+.round {
+    border-radius : 50%;
+}
+
+.rounded-corners {
+    border-radius : 8px;
+}
+
+.black {
+    color : white;
+    background-color : black;
+}
+
+.blue {
+    color : white;
+    background-color : royalblue;
+}
+
+.green {
+    color : white;
+    background-color : green;
+}
+
+.orange {
+    color : black;
+    background-color : orange;
+}
+
+.red {
+    color : white;
+    background-color : red;
+}
+
+.purple {
+    color : white;
+    background-color : purple;
+}
+
+.white {
+    color : black;
+    background-color : white;
+}
+
+.yellow {
+    color : black;
+    background-color : gold;
+}
+
+.red-text {
+    color : red;
+}
+
+.white-on-black {
+    background-color: black;
+    color : white;
+}
+
+ul.no-bullet {
+    list-style-type : none;
+}
+
+.jtml-chooser-content {
+    margin : 0px;
+    padding : 0px;
+}
+
+.jtml-chooser li, li.jtml-chooser-selectable {
+    list-style-type : none;
+    cursor : pointer;
+}
+
+.jtml-selected {
+    background-color : paleturquoise;
+}
+
+.jtml-layout-horizontal .jtml-radio-item, .jtml-layout-horizontal li {
+    display : inline-block;
+}
+
+.jtml-tab-strip {
+    padding-left : 0px;
+}
+
+.jtml-tab {
+    display : inline-block;
+    list-style-type : none;
+    cursor : pointer;
+    padding : 5px;
+    margin : 1px;
+    vertical-align : top;
+}
+
+.jtml-tab.jtml-selected {
+    background-color : white;
+}
+
+.jtml-tab:not(.jtml-selected) {
+    background-color : lightgray;
+}
+
+.jtml-rotate-90 {
+    transform : rotate(90deg);
+}
+
+.jtml-collapsible-header {
+    display : flex;
+    align-items : center;
+}
+
+.jtml-collapsible-header.right-to-left {
+    flex-direction : row-reverse;
+    justify-content : flex-end;
+}
+
+.jtml-collapsible-title {
+    flex-grow : 1;
+} 
 

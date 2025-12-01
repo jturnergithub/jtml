@@ -1,0 +1,46 @@
+<html>
+    <head>
+        <title>Miscellany</title>
+        <link rel="stylesheet" href="../../jtml.css"/>
+        <link rel="stylesheet" href="../examples.css"/>
+        <link rel="stylesheet" href="./miscellany.css"/>
+    </head>
+    <body>
+        <script type="module">
+            import {body, h1} from "../../jtml.js";
+            import example from "../common/js/example.js";
+            import footer from "../common/js/footer.js";
+            import formEntries from "./form-entries.js";
+            import radio from "./radio.js";
+            import tabs from "./tabs.js"; 
+            import checklist from "./checklist.js";
+            import collapsible from "./collapsible.js";
+
+            body(
+                h1("Miscellany"),
+                example(
+                    "Radio",
+                    ...radio
+                ).classes("inline-block"),
+                example(
+                    "Form Entries",
+                    formEntries
+                ).classes("inline-block"),
+                example(
+                    "Tabs",
+                    tabs
+                ).id("planets").classes("inline-block"),
+                example(
+                    "Checklist",
+                    checklist
+                ).classes("inline-block"),
+                example(
+                    "Collapsible menu",
+                    collapsible
+                ),
+                footer
+            );
+        </script>
+        
+    </body>
+</html>

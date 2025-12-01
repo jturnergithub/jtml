@@ -1,0 +1,53 @@
+#slide {
+    height : 450px;
+    width : 400px;
+}
+
+#title {
+    background-color : palegoldenrod;
+    font-size : x-large;
+    font-weight : bold;
+    padding : 3px;    
+    margin : 10px;
+    height : 36px;
+}
+
+#title-text {
+    width : 75%;
+    display : inline-block;
+    text-align : center;
+}
+
+#title button {
+    background-color : white;
+    vertical-align : text-bottom; 
+}
+
+#title button img {
+    height : 30px;
+}
+
+#prev {
+    float : left;
+}
+    
+#next {
+    float : right;
+}
+
+#middle { 
+    text-align : center;
+}
+
+#caption {
+    text-align : center;
+}
+
+#planet-image {
+    width : 280px;
+    height : 280px;
+    padding : 10px;
+    margin-left : 10px;
+    margin-right : 10px;
+    border : 1px solid black;
+}

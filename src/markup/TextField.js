@@ -1,17 +1,30 @@
-import ValueTag from "./ValueTag.js";
+import InputTag from "./InputTag.js";
 
-export default class TextField extends ValueTag {
+export default class TextField extends InputTag {
 
-    constructor(attrs) {
-        super("input", attrs);
-        this.event = "input";
+    #format;
+
+    constructor() {
+        super("input", "text");
+        this.event   = "input";
+        this.#format = value => value;
+    }
+
+    format(f) {
+        this.#format = f;
+        return this;
+    }
+    
+    input(callback) {
+        this.domNode.addEventListener("input", event => callback(this, event));
+        return this;
     }
 
     display(value = "") {
-        this.domNode.value = value;
+        this.domNode.value = this.#format(value);
     }
 
-    evaluate() {
+    inspect() {
         return this.domNode.value;
     }
 

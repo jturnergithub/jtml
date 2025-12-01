@@ -2,16 +2,19 @@
   "name": "jtml",
   "version": "1.0.0",
   "description": "The JTML (Javascript Text Markup Language) framework",
-  "main": "examples/hello-world/index.html",
-  "type" : "module",
+  "main": "index.js",
   "directories": {
-    "example": "examples",
+    "examples": "examples",
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "test": "ava"
   },
   "author": "JT",
-  "license": "ISC"
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "ava": "^6.1.3",
+    "express": "^4.21.2"
+  }
 }

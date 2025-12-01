@@ -1,5 +1,5 @@
-import ListItemTag from "./ListItemTag.js";
-import Tag from "./Tag.js";
+import ListItem from "./ListItem.js";
+import ContainerTag from "./ContainerTag.js";
 
 /**
 An IMPORTANT SAFETY TIP follows. READ IT.
@@ -10,7 +10,7 @@ For example: suppose you have an unordered list <ul> bound to the array ["a", "c
 That list has three <li> tags inside it, each bound to a different value. Now you
 insert the new value "b" at index 1. The three existing <li> tags are *** reused ***.
 The one bound to "a" is unchanged; the one formerly bound to "c" is now bound to "b";
-the one formerly bound to "d" is now bound to "c"; and the only new ListItemTagTag is
+the one formerly bound to "d" is now bound to "c"; and the only new Tag is
 bound to "d".
 
 Even replacing one array with another works this way. While the bound array instance
@@ -19,29 +19,33 @@ contents.
 
 Deleting one or more items does delete JTML and associated
 DOM elements, as opposed to (say) hiding them. However, it deletes by *truncating*.
-In other words, if you delete the i'th element of a bound array, the i'th JTML
-child keeps right on existing; it just displays the value formerly at i + 1. Only
+In other words, if you delete the third element of a bound six-element array, the third JTML
+child keeps right on existing; it just displays the value formerly at array[4]. Only
 the last JTML child is actually removed.
 
 The upshot of this is that a child JTML element, once created, always has the same
 index.
 **/
 
-export default class ListTag extends Tag {
+export default class ListTag extends ContainerTag {
 
-    constructor(ordered, attrs, factory = ListItemTag.FACTORY) {
+    constructor(ordered, factory) {
         if (ordered) {
-            super("ol", attrs);
+            super("ol");
         }
         else {
-            super("ul", attrs);
+            super("ul");
         }
-        this.children.factory = factory;
+        this.children.factory = ListItem.factory(factory);
+    }
+
+    bind(key, initial) {
+        super.bind(key, initial);
+        this.always((li, index) => li.bind(`${key}[${index}]`));
+        return this;
     }
 
     display(array) {
-        // This creates (using the specified factory) or deletes children,
-        // and calls display() on each child.
         this.children.display(array);
     }
 }

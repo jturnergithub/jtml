@@ -1,90 +1,96 @@
+import JTMLComponent from "../core/JTMLComponent.js";
+import JTMLText from "../core/JTMLText.js";
+import Button from "./Button.js";
 import Checkbox from "./Checkbox.js";
 import ChooserTag from "./ChooserTag.js";
+import ContainerTag from "./ContainerTag.js";
 import DiscreteValueTag from "./DiscreteValueTag.js";
 import Image from "./Image.js";
-import ListItemTag from "./ListItemTag.js";
+import ListItem from "./ListItem.js";
 import ListTag from "./ListTag.js";
-import OptionTag from "./OptionTag.js";
+import Option from "./Option.js";
 import RadioButton from "./RadioButton.js";
-import SelectTag from "./SelectTag.js";
+import Select from "./Select.js";
+import Table from "./Table.js";
+import TableRow from "./TableRow.js";
 import Tag from "./Tag.js";
+import TextArea from "./TextArea.js";
 import TextField from "./TextField.js";
 
-/**
- * The "standard" Tag.Builder invocation.
- * 
- * @param {object} attrs 
- * @param  {...JTMLComponent} contents 
- */
-function tag(what, attrs, ...contents) {
-    const builder = Tag.builder();
-    if (typeof what === "string") {
-        builder.name(what);
+export function toArgs(factory, contents = []) {
+    if (factory !== undefined && typeof factory !== "function") {
+        contents.unshift(factory);
+        factory = undefined;
     }
-    else if (typeof what === "function") {
-        builder.type(what);
+    return [factory, contents];
+}
+
+export function tag(name) {
+    return new Tag(name);
+}
+
+export function containerTag(name, factory, ...contents) {
+    [factory, contents] = toArgs(factory, contents);
+    return new ContainerTag(name, factory)._(...contents);
+}
+
+export function a(href, ...contents) {
+    return containerTag("a", ...contents).attr("href", href);
+}
+
+export function area() {
+    return tag("area");
+}
+
+export function body(...contents) {
+    for (let jtml of contents) {
+        if (typeof jtml === "string") {
+            jtml = new JTMLText(jtml);
+        }
+        jtml.addToDOM();
     }
-    return builder
-        .attrs(attrs)
-        .contents(contents)
-        .build();
+    return new JTMLComponent();
 }
 
-export function a(href, attrs, ...contents) {
-    return Tag.builder()
-        .name("a")
-        .attrs(attrs)
-        .attr("href", href)
-        .contents(...contents)
-        .build();
+export function br() {
+    return tag("br");
 }
 
-export function area(attrs) {
-    return tag("area", attrs);
+export function button(...contents) {
+    return new Button()._(...contents);
 }
 
-export function br(attrs) {
-    return new Tag("br", attrs);
+export function canvas(width, height) {
+    return tag("canvas")
+        .attr("width", width)
+        .attr("height", height);
 }
 
-export function button(attrs, ...contents) {
-    return Tag.builder()
-        .name("button")
-        .attrs(attrs)
-        .contents(...contents)
-        .build()
-        .viewer((text, self) => self.domNode.textContent = String(text));
+export function checkbox() {
+    return new Checkbox();
 }
 
-export function checkbox(attrs) {
-    return new Checkbox(attrs);
+export function code(...contents) {
+    return containerTag("code", ...contents);
 }
 
 export function discrete(type, min = 0, max, step = 1) {
-    const attrs = {
-        min : min,
-        type : type
-    };
+    const tag = new DiscreteValueTag(type)
+        .attr("type", type)
+        .attr("min", min);
     if (max !== undefined) {
-        attrs.max = max;
+        tag.attr("max", max);
     }
-    return Tag.builder() 
-        .type(DiscreteValueTag)
-        .attrs(attrs)
-        .build();
+    return tag;
 
 }
 
-export function div(attrs, ...contents) {
-    return Tag.builder()
-        .name("div")
-        .attrs(attrs)
-        .contents(...contents)
-        .build();
+export function div(factory, ...contents) {
+    return containerTag("div", factory, ...contents);
 }
 
 export function em(text) {
-    return new Tag("em")._(text);
+    return containerTag("em", text);
 }
 
 export function factory(factory, ...contents) {
@@ -97,87 +103,98 @@ export function factory(factory, ...contents) {
     }
 }
 
-export function h(n, attrs, ...contents) {
-    return Tag.builder()
-    .name("h" + n)
-    .attrs(attrs)
-    .contents(...contents)
-    .build();
+export function h(n, ...contents) {
+    return containerTag("h" + n, ...contents);
 }
 
-export function h1(attrs, ...contents) {
-    return h(1, attrs, ...contents);
+export function h1(...contents) {
+    return h(1, ...contents);
 }
 
-export function h2(attrs, ...contents) {
-    return h(2, attrs, ...contents);
+export function h2(...contents) {
+    return h(2, ...contents);
 }
 
-export function h3(attrs, ...contents) {
-    return h(3, attrs, ...contents);
+export function h3(...contents) {
+    return h(3, ...contents);
 }
 
-export function hr(attrs) {
-    return new Tag("hr", attrs);
+export function h4(...contents) {
+    return h(4, ...contents)
 }
 
-export function img(src, attrs) {
-    return Tag.builder()
-        .type(Image)
-        .attrs(attrs)
-        .attr("src", src)
-        .build();
+export function h5(...contents) {
+    return h(5, ...contents)
 }
 
-export function li(attrs, ...contents) {
-    return Tag.builder()
-        .type(ListItemTag)
-        .attrs(attrs)
-        .contents(...contents)
-        .build();
+export function h6(...contents) {
+    return h(6, ...contents)
+}
+
+export function hr() {
+    return tag("hr");
+}
+
+export function img(src, width, height) {
+    const image = new Image(src);
+    if (width) {
+        image.width(width);
+    }
+    if (height) {
+        image.height(height);
+    }
+    return image;
+}
+
+export function label(...contents) {
+    return containerTag("label", ...contents);
+}
+
+export function li(...contents) {
+    return new ListItem()._(...contents);
 }
 
 export function map(name, ...contents) {
-    return tag("map", { "name" : name }, ...contents);
+    return containerTag("map", ...contents).attr("name", name);
 }
 
-export function ol(attrs, ...contents) {
-    return Tag.builder()
-        .type(ListTag, ListTag.ORDERED)
-        .attrs(attrs)
-        .contents(...contents)
-        .build();
+export function ol(factory, ...contents) {
+    [factory, contents] = toArgs(factory, contents);
+    return new ListTag(ListTag.ORDERED, factory)._(...contents);
 }
 
 export function option(text, value = text) {
-    return Tag.builder()
-        .type(OptionTag, text, value)
-        .build();
+    return new Option(text, value);
 }
 
-export function radioButton(attrs) {
-    return new RadioButton(attrs);
+export function p(...contents) {
+    return containerTag("p", ...contents);
 }
 
-export function select(attrs, ...contents) {
-    return Tag.builder()
-        .type(SelectTag)
-        .attrs(attrs)
-        .contents(contents)
-        .build();
+export function pre(...contents) {
+    return containerTag("pre", ...contents);
 }
+
+export function radioButton() {
+    return new RadioButton();
+}
+
+export function select(toDisplay, ...contents) {
+    if (typeof toDisplay !== "function") {
+        contents.unshift(toDisplay);
+        toDisplay = undefined;
+    }
+    return new Select(toDisplay)._(...contents);
+}
+
+select.Mode = ChooserTag.Mode;
 
 export function slider(min = 0, max) {
     return discrete("range", min, max);
 }
 
-export function span(attrs, ...contents) {
-    return Tag.builder()
-        .name("span")
-        .attrs(attrs)
-        .contents(...contents)
-        .textTag(true)
-        .build();
+export function span(...contents) {
+    return containerTag("span", ...contents);
 }
 
 export function spinner(min = 0, max) {
@@ -185,39 +202,40 @@ export function spinner(min = 0, max) {
 }
 
 export function strong(text) {
-    return new Tag("strong")._(text);
+    return containerTag("strong", text);
 }
 
-export function table(attrs, ...contents) {
-    return Tag.builder()
-        .name("table")
-        .attrs(attrs)
-        .contents(contents)
-        .build();
+export function table(factory, ...contents) {
+    if (typeof factory !== "function") {
+        contents.unshift(factory);
+        factory = undefined;
+    }
+    return new Table(factory)._(...contents);
 }
 
-export function td(attrs, ...contents) {
-    return tag("td", attrs, contents);
+export function td(factory, ...contents) {
+    return containerTag("td", factory, ...contents);
 }
 
-export function textField(attrs, ...contents) {
-    return Tag.builder()
-        .type(TextField)
-        .attrs(attrs)
-        .contents(...contents)
-        .build();
+export function textArea(rows, cols) {
+    return new TextArea(rows, cols);
 }
 
-export function tr(attrs, ...contents) {
-    return tag("tr", attrs, contents);
+export function textField(...contents) {
+    return new TextField()._(...contents);
 }
 
-export function ul(attrs, ...contents) {
-    return Tag.builder()
-        .type(ListTag, ListTag.UNORDERED)
-        .attrs(attrs)
-        .contents(...contents)
-        .build();
+export function th(factory, ...contents) {
+    return containerTag("th", factory, ...contents);
 }
 
-export const SelectionMode = ChooserTag.Mode;
+export function tr(factory, ...contents) {
+    // return containerTag("tr", factory, ...contents);
+    [factory, contents] = toArgs(factory, contents);
+    return new TableRow(factory)._(...contents);
+}
+
+export function ul(factory, ...contents) {
+    [factory, contents] = toArgs(factory, contents);
+    return new ListTag(ListTag.UNORDERED, factory)._(...contents);
+}

@@ -1,0 +1,67 @@
+th {
+    background-color : black;
+    color : white;
+}
+
+.banded tr.jtml-even {
+    background-color : palegoldenrod;
+}
+
+.fixed-height {
+    height : 200px;
+}
+
+.color-cell {
+    width : 20px;
+    height : 20px;
+}
+
+.jtml-palette table {
+   border-spacing : 3px;
+}
+
+.palette-item.jtml-selected {
+    box-shadow : 2px 2px black;
+}
+
+.jtml-chooser tr {
+    cursor : pointer;
+}
+
+.jtml-form-label {
+    width : 120px;
+}
+
+.jtml-form-field {
+    margin : 2px;
+}
+
+.jtml-form-label, .jtml-form-field {
+    display : inline-block;
+}
+
+#arrow-buttons {
+    height : 100%;
+    vertical-align : middle;
+}
+
+#arrow-buttons button {
+    display : block;
+    margin : 5px;
+}
+
+#arrow-buttons button:disabled {
+    opacity : 50%;
+}
+
+#arrow-buttons button img {
+    height : 20px;
+}
+
+#detail-btns {
+    text-align : center;
+}
+
+#detail-btns button {
+    margin : 2px;
+}

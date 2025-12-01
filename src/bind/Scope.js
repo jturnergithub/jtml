@@ -1,111 +1,88 @@
 import Binder from "./Binder.js";
 
-const stack = [ new Binder() ]; 
 const scopes = {}
 
 export default class Scope {
 
     constructor(name) {
         this.name    = name;
-        this.isolate = false;
-        this.aliases = []; // Alias definitions to apply when there's a materialized binder.
         this.pending = []; // Operations to execute when there's a materialized binder.
         if (name) {
             scopes[name] = this;
         }
     }
     
-    alias(newName, oldName) {
-        this.aliases.push({
-            newName : newName,
-            oldName : oldName
-        });
+    alias(aliasKey, basisKey) {
+        this.pending.push(binder => binder.alias(aliasKey, basisKey));
         return this;
     }
 
-    isolated(isolated) {
-        if (isolated === undefined) {
-            return this.isolate;
-        }
-        else {
-            this.isolate = isolated;
-            return this;    
-        }
+    define(key, dependencies, evaluator) {
+        this.pending.push(binder => binder.define(key, dependencies, evaluator));
     }
 
-    redirect(key) {
-        this.binder.binding(this.alias, this.binder.progenitor.binding(key));
+    set(key, value) {
+        this.pending.push(binder => binder.define(key, value));
     }
 
-    get single() {
-        this.enter();
-        return jtml => {
-            this.exit();
-            return jtml;
+    /**
+     * Creates a new binder that inherits bindings (prototypally, of course) from
+     * the current binder. The new binder will beused for all JTML bindings until
+     * it's either popped from the stack or superseded by an even newer model.
+     */
+    get child() {
+        this.enter(Binder.current());
+        return (...jtmls) => {
+            return this.exit(jtmls);
         }
     }
 
-    get multiple() {
+    /**
+     * Creates a new binder with no inherited bindings. The new binder will beused for 
+     * all JTML bindings until it's either popped from the stack or superseded by an 
+     * even newer model.
+     * 
+     */
+    get independent() {
         this.enter();
         return (...jtmls) => {
-            this.exit();
+            return this.exit(jtmls);
+        }
+    }
+
+    /**
+     * Enters a new scope by creating a Binder, configuring according to the pending
+     * list, and pushing it onto the binder stack (making it current). If the parent
+     * exists, the new binder takes the parent's bindings as the prototype for its 
+     * own bindings. If not, the new binder is independent.
+     * 
+     * @param {Binder} parent 
+     */
+    enter(parent) {
+        const binder = new Binder(parent);
+        for(const callback of this.pending) {
+            callback(binder);
+        }
+        Binder.push(binder);
+        return this;
+    }
+
+    /**
+     * Exits a scope.
+     * 
+     * @returns The previous binder
+     */
+    exit(jtmls) {
+        Binder.pop();
+        if (jtmls?.length === 1) {
+            return jtmls[0];
+        }
+        else {
             return jtmls;
         }
     }
 
-    materialize(progenitor) {
-        if (!this.binder) {
-            progenitor = progenitor || Scope.current();
-            this.binder = this.isolate ? new Binder() : new Binder(progenitor);
-            for (let alias of this.aliases) {
-                this.binder.alias(alias.newName, alias.oldName);
-            }    
-        }
-        return this;
-    }
-
-    enter(progenitor) {
-        this.materialize(progenitor);
-        stack.push(this.binder);
-        return this.binder;
-    }
-
-    exit() {
-        if (stack.length > 1) {
-            return stack.pop();
-        }
-        else {
-            throw new Error("Can't exit global binder");
-        }
-    }
-
-    /*** Facade over Binder methods ***/
-
-    set(key, value) {
-        this.pending.push(binder => binder.set(key, value));
-        return this;
-    }
-
-    monitor(key, ...callbacks) {
-        this.pending.push(binder => binder.monitor(key, ...callbacks));
-        return this;
-    }
-
-    define(key, ...dependencies) {
-        this.pending.push(binder => binder.define(key, ...dependencies));
-        return this;
-    }
 }
-
-Scope.global = function() {
-    return stack[0];
-}
-
-Scope.current = function() {
-    return stack[stack.length - 1];
-}
-
-Scope.binding = Scope.current;
 
 Scope.get = function(name) {
     return scopes[name] || new Scope(name);

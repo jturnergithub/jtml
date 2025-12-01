@@ -2,6 +2,18 @@ li {
     padding : 3px;
 }
 
+button {
+    margin : 3px;
+}
+
+button:disabled {
+    opacity : 40%;
+}
+
+input[type="text"] {
+    margin : 3px;
+}
+
 .narrow {
     width : 12%;
 }
@@ -10,8 +22,17 @@ li {
     width : 40%;
 }
 
-.clickable {
+.clickable, .jtml-chooser li {
     cursor : pointer;
+}
+
+.image-button img {
+    width : 15px;
+    height : 15px;
+}
+
+.jtml-chooser {
+    margin : 0px 5px;
 }
 
 .jtml-selected {
@@ -20,12 +41,52 @@ li {
     font-weight : bold;
 }
 
+#condiment-ct {
+    font-size : xx-large;
+}
+
 .monicker {
     width : 70%;
 }
 
 .banded li.jtml-even {
     background-color : palegoldenrod;
+}
+
+#badge {
+    border : 1px solid black;
+    border-radius : 5px;
+    margin : 5px;
+    width : 160px;
+    display : inline-block;
+    text-align : center;
+}
+
+#hi {
+    font-size : large;
+    color : white;
+    border-top-left-radius : 5px;
+    border-top-right-radius : 5px;  
+    padding : 5px;
+}
+
+#filler {
+    border-bottom-right-radius : 5px;
+    border-bottom-left-radius : 5px;
+    height : 5px;
+}
+
+#name {
+    font-size : x-large;
+}
+
+#editor button img {
+    width : 15px;
+    height : 15px;
+}
+
+#editor input {
+    width : 80px;
 }
 
 #megillah li {

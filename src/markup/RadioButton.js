@@ -1,22 +1,49 @@
-import JTMLText from "../core/JTMLText.js";
-import Tag from "./Tag.js";
-import ValueTag from "./ValueTag.js";
+import InputTag from "./InputTag.js";
 
-export default class RadioButton extends ValueTag {
+/**
+ * An input of type "radio". 
+ * 
+ */
+export default class RadioButton extends InputTag {
 
-    constructor(attrs) {
-        super("input", attrs, "radio");
+    constructor(name, value) {
+        super("input", "radio");
+        this.attr("name", name);
+        this.attr("value", value);
+        this.classes("jtml-radio-button");
     }
 
-    bind(key, initial, callback) {
-        return super.bind(key, !!initial, callback);
+    /**
+     * If a RadioButton is bound, it should be bound to a boolean--even though
+     * its nominal value is probably *not* a boolean. That's because changing
+     * the bound value should change the button's state/appearance, not its
+     * name or its value if checked.
+     * 
+     * @param {string} key 
+     * @param {*} initial 
+     * @param {*} callback 
+     * @returns this
+     */
+    bind(key, initial) {
+        return super.bind(key, !!initial);
     }
 
+    /**
+     * Called by any code that changes the radio button's bound value.
+     * 
+     * @param {boolean} selected 
+     */
     display(selected) {
         this.domNode.checked = selected;
     }
 
-    evaluate() {
+    /**
+     * Called when the user clicks this radio button so that the binding
+     * can get updated with the result of the click.
+     * 
+     * @returns boolean: selected or not selected
+     */
+    inspect() {
         return this.domNode.checked;
     }
 }

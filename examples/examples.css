@@ -1,0 +1,103 @@
+* {
+	font-family: Candara,Calibri,Segoe,Segoe UI,Optima,Arial,sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  background-image : linear-gradient(to right, #3b9334, white);
+  color : white;
+  text-shadow : 2px 2px black;
+  padding : 0px 5px 0px 5px;
+}
+
+ul.no-bullet {
+    list-style-type : none;
+}
+
+.reversed {
+    color : white;
+    background-color : black;
+}
+
+.black {
+    background-color : black;
+}
+
+.blue {
+    background-color : blue;
+}
+
+.beige {
+    background-color: beige;
+}
+
+.brown {
+    background-color : brown;
+}
+
+.gray {
+    background-color : gray;
+}
+
+.green {
+    background-color : green;
+}
+
+.orange {
+    background-color : orange;
+}
+
+.purple {
+    background-color : purple;
+}
+
+.red {
+    background-color : red;
+}
+
+.tan {
+    background-color : tan;
+}
+
+.white {
+    background-color :white;
+}
+
+.yellow {
+    background-color : yellow;
+}
+
+.outlined {
+    border : 1px solid black;
+}
+
+div.example {
+    border : 1px solid gray;
+    border-radius : 5px;
+    padding : 2px 5px 5px 5px;
+    margin : 5px;
+    vertical-align : top;
+}
+
+div.example h2 {
+    margin : 5px;
+}
+
+.jtml-form-label {
+    display : inline-block;
+}
+
+.jtml-chooser-content {
+    margin : 0px;
+    padding : 0px;
+}
+
+li.jtml-chooser-selectable {
+    list-style-type : none;  
+}
+
+#jtml-logo {
+    width : 40px;
+    height : 40px;
+    display : inline;
+    float : right;
+}

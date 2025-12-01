@@ -1,0 +1,15 @@
+#react-demo {
+    width : 480px;
+    border : 1px solid black;
+    border-radius : 5px;
+    padding : 5px;
+}
+
+#react-demo h1 {
+    margin-top : 3px;
+}
+
+#react-demo button {
+    display : block;
+    margin-bottom : 5px;
+}

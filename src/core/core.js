@@ -1,4 +1,4 @@
-export {binder, format, scope} from "../bind/bind.js";
+export * from "../bind/bind.js";
 import JTMLText from "./JTMLText.js";
 
 export function repeat(what, factory) {

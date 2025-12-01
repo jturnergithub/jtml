@@ -1,4 +1,4 @@
-import {button, checkbox, div, factory, formEntry, h3, option, select, span, textField} from "../../src/jtml.js";
+import {button, checkbox, div, factory, formEntry, h3, option, select, span, textField} from "../../jtml.js";
 import data from "./data.js";
 
 class Employee {

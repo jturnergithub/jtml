@@ -1,22 +1,60 @@
 <html>
     <head>
+        <link rel="stylesheet" href="../../jtml.css"/>
+        <link rel="stylesheet" href="../examples.css"/>
+        <link rel="stylesheet" href="./compare.css"/>
         <title>React Demo</title>
     </head>
     <body>
         <script type="module">
 
-            import {button, div, h1} from "../../jtml/src/jtml.js";
+            import {body, button, div, h1} from "../../jtml.js";
             
-            function handleClick(btn) {
-                btn.increment("clickCt");
+            function handleClick(jtml) {
+                jtml.increment("clickCt");
             }
 
-            div(
-                h1("Counters that update together"),
-                button().bind("clickCt", 0).click(handleClick).disabled("clickCt", clickCt => clickCt % 2 === 1),
-                button().bind("clickCt").click(handleClick)
-            ).addToDOM();
+            body(
+                div(
+                    h1("Counters that update together"),
+                    button().bind("clickCt", 0).toDisplay(clickCt => `Clicked ${clickCt} times`).click(handleClick),
+                    button().bind("clickCt").toDisplay(clickCt => `Clicked ${clickCt} times`).click(handleClick)
+                ).id("react-demo")
+            );
            
+            /*
+            Here is the equivalent ReactJS code, from https://react.dev/learn.
+            
+            Not counting punctuation and whitespace lines, it's 16 lines long. JTML does the same
+            in exactly half the lines, without introducing any special syntax. I'd argue that it's
+            clearer, too.
+
+            import { useState } from 'react';
+
+            export default function MyApp() {
+            const [count, setCount] = useState(0);
+
+            function handleClick() {
+                setCount(count + 1);
+            }
+
+            return (
+                <div>
+                <h1>Counters that update together</h1>
+                <MyButton count={count} onClick={handleClick} />
+                <MyButton count={count} onClick={handleClick} />
+                </div>
+            );
+            }
+
+            function MyButton({ count, onClick }) {
+            return (
+                <button onClick={onClick}>
+                Clicked {count} times
+                </button>
+            );
+            }
+            */
         </script>
     </body>
 </html>

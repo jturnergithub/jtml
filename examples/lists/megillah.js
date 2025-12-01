@@ -1,4 +1,4 @@
-import {button, div, img, li, span, strong, text, textField, ul, viewer} from "../../src/jtml.js";
+import {button, div, img, li, span, strong, text, textField, ul, viewer} from "../../jtml.js";
 
 export default function create() {
     return [

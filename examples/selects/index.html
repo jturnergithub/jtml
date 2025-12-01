@@ -1,33 +1,28 @@
 <html>
     <head>
         <title>Example: Selects</title>
-        <link rel="stylesheet" href="../common/examples.css"/>
+        <link rel="stylesheet" href="../../jtml.css"/>
+        <link rel="stylesheet" href="../examples.css"/>
         <link rel="stylesheet" href="./selects.css"/>
 
     </head>
     <body id="body">
         <script type="module">
-            import {div, h1, hr, select, text} from "../../src/jtml.js";
+            import {a, body, div, h1, hr, select, text} from "../../jtml.js";
             import example from "../common/js/example.js";
+            import fixed from "./fixed.js";
+            import switchable from "./switchable.js";
+            import objects from "./objects.js";
+            import footer from "../common/js/footer.js";
 
-            h1("Selects").addToDOM();
-            example("Static Selects",
-                // A static scrolling list
-                select("Fee", "Fie", "Fo", "Fum").id("scrolling").size(3),
-                div(
-                    // A static drop-down list
-                    select("Foo", "Bar", "Baz", "Qux").bind("jtml-drop-down"),
-                    hr(),
-                    "You selected '", text("").bind("jtml-drop-down"), "'"
-                ).classes("inline-block")
-            ).classes("inline-block").addToDOM();
+            body(
+                h1("Selects"),
+                example("Fixed Selects", ...fixed).classes("inline-block"),
+                example("Switchable Select", ...switchable).id("switchable").classes("inline-block"),
+                example("Objects", ...objects).id("objects").classes("inline-block"),
+                footer
+            )
 
-            // import switchable from "./switchable.js";
-            // example("Switchable Select", switchable()).id("switchable").classes("inline-block").addToDOM();
-            //
-            // import object from "./object.js";
-            // example("Object Select", object()).classes("inline-block").style("width", "320px").addToDOM();
-            //
             // import db from "./db.js";
             // example("Database Select", db()).addToDOM();
 

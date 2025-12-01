@@ -1,29 +1,34 @@
-import Tag from "../markup/Tag.js";
+import ValueTag from "../markup/ValueTag.js";
 import RadioButton from "../markup/RadioButton.js";
-import JTMLText from "../core/JTMLText.js";
 
-export default class RadioItem extends Tag {
+export default class RadioItem extends ValueTag {
 
     #label = "";
 
-    constructor(name, label) {
-        super("div", {});
-        this.button = new RadioButton({ name : name });
+    constructor(name, label = (value ?? "").toString()) {
+        super("div");
+        this.button = new RadioButton(name, label);
         this.#label = label;
-        this.containing(this.button, new JTMLText(label));
+        this._(this.button, label);
         this.classes("jtml-ui jtml-radio-item");
     }
-
-    get selected() {
-        return this.button.evaluate();
-    }
-
-    set selected(selected) {
-        this.button.display(selected);
+    
+    selected(selected) {
+        if (selected === undefined) {
+            return this.button.inspect();
+        }
+        else {
+            this.button.display(selected);
+            return this;
+        }
     }
 
     get label() {
         return this.#label;
+    }
+
+    evaluate() {
+        return this.value();
     }
 
     value(value) {
@@ -34,5 +39,14 @@ export default class RadioItem extends Tag {
             this.button.attr("value", value);
             return this;
         }
+    }
+
+    /**
+     * Disabling a RadioItem means disabling its button.
+     * 
+     * @param {boolean} disabled 
+     */
+    setDisabled(disabled) {
+        this.button.domNode.disabled = disabled;
     }
 }

@@ -1,0 +1,33 @@
+<html>
+    <head>
+        <title>JTML Examples</title>
+        <link rel="stylesheet" href="../jtml.css"/>
+        <link rel="stylesheet" href="./examples.css"/>
+        <link rel="icon" type="image/x-icon" href="../jtml.gif">
+    </head>
+    <script type="module">
+        import {a, body, div, h1, img, li, ul} from "../jtml.js";
+
+        body(
+            h1("Directory of JTML Examples"),
+            // div(
+            //     h1("Directory of JTML Examples").classes("inline"),
+            //     img("../jtml.gif").id("jtml-logo")
+            // ),
+            "These examples are currently working:",
+            ul(
+                li(a("./hello-world", "Hello, World")),
+                li(a("./static-web-page", "Static Web Page")),
+                li(a("./accept-terms", "Checkbox + Button Binding")),
+                li(a("./basic-bindings", "Basic Bindings")),
+                li(a("./selects", "Selects")),
+                li(a("./lists", "Lists")),
+                li(a("./tables", "Tables")),
+                li(a("./slideshow", "Slideshow")),
+                li(a("./miscellany", "Miscellany"))
+            )
+        );
+        
+
+    </script>
+</html>

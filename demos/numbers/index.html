@@ -1,0 +1,22 @@
+<html>
+    <head>
+        <title>Numbers</title>
+        <link rel="stylesheet" href="../../jtml.css"/>
+    </head>
+    <script type="module">
+        import {body, button, p, ul} from "../../jtml.js";
+
+        const jtml = body(
+            button("Toggle list").click(() => jtml.toggle("hideList")),
+            button("Push number").click(() => list.push(list.length + 1)),
+            button("Pop number").click(() => list.pop()),
+            button("Reverse list").click(() => list.reverse()),
+            button("Clear list").click(() => list.length = 0),
+            ul().bind("list", [1, 2, 3]).hidden(["hideList", "list.length"], (hide, length) => hide || !length),
+            p("List is not empty, but hidden").visible(["hideList", "list.length"], (hide, length) => hide && length),
+            p("List is empty").hidden("list.length")
+        );
+        const list = jtml.get("list");
+
+    </script>
+</html>

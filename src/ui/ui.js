@@ -1,41 +1,85 @@
-import FormEntry from "./FormEntry.js";
+import {scope} from "../bind/bind.js";
+import {div, img, table, toArgs} from "../markup/markup.js";
+import CheckListItem from "./CheckListItem.js";
+import Collapsible from "./Collapsible.js";
+import ChooserTag from "../markup/ChooserTag.js";
 import Chooser from "./Chooser.js";
+import FormEntry from "./FormEntry.js";
+import Palette from "./Palette.js";
 import Radio from "./Radio.js";
-import Tag from "../markup/Tag.js";
-import {text} from "../core/core.js";
-import {div, span} from "../markup/markup.js";
+import Tabs from "./Tabs.js";
 
-export function formEntry(label, widget) {
-    return Tag.builder()
-        .type(FormEntry, label, widget)
-        .build();
+export function collapsible(title, content, image = "../../images/chevron-down.gif") {
+    if (typeof title === "string") {
+        title = div(title);
+    }
+    if (typeof image === "string") {
+        image = img(image);
+    }
+    return new Collapsible(
+        image,
+        title,
+        content
+    )
 }
 
-export function chooser(tag, mode, equality) {
-    return new Chooser(tag, mode, equality);
+export function checklist(factory, ...items) {
+    if (typeof factory !== "function") {
+        items.unshift(factory);
+        factory = label => label
+    }
+    return new ChooserTag("div", ChooserTag.Mode.MULTIPLE)
+        .factory(CheckListItem.metafactory(factory))
+        .classes("jtml-ui jtml-check-list")
+        ._(...items);
 }
 
-export function radio(name, attrs, ...contents) {
-    return Tag.builder()
-        .type(Radio, name)
-        .attrs(attrs)
-        .contents(...contents)
-        .build();
+export function checklistItem(...contents) {
+    return new CheckListItem(...contents);
 }
 
-export function textDiv(string, attrs) {
-    return textTag("div", attrs, string)
+export function chooser(tag, mode) {
+    return new Chooser(tag, mode);
 }
 
-export function textSpan(string, attrs) {
-    return textTag("span", attrs, string);
+export function formEntry(label, separator, jtml) {
+    return new FormEntry(label, separator, jtml);
 }
 
-export function textTag(name, attrs, string = "") {
-    return Tag.builder()
-        .name(name)
-        .attrs(attrs)
-        .contents(text(string))
-        .textTag(true)
-        .build();
+export function palette(tag, mode) {
+    if (typeof tag === "string") {
+        mode = tag;
+        tag = table();
+    }
+    return new Palette(tag, mode);
 }
+
+export function radio(factory, ...contents) {
+    [factory, contents] = toArgs(factory, contents);
+    return new Radio(factory)._(...contents);
+}
+
+export function tabs(...contents) {
+    const tabs = new Tabs();
+    for (const item of contents) {
+        tabs.tab(item[0], item[1]);
+    }
+    tabs.set(tabs.chooser.keys.binding, contents[0][0]);
+    return tabs;
+}
+
+export function textDiv(string) {
+    return textTag("div", string)
+}
+
+// export function textSpan(string) {
+//     return textTag("span", string);
+// }
+
+// export function textTag(name, string = "") {
+//     return Tag.builder()
+//         .name(name)
+//         .contents(text(string))
+//         .textTag(true)
+//         .build();
+// }

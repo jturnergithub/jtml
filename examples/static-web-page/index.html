@@ -1,0 +1,35 @@
+<html>
+    <head>
+        <title>Static Web Page</title>
+        <link rel="stylesheet" href="../examples.css"/>
+        <link rel="stylesheet" href="./static-web-page.css"/>
+    </head>
+
+        <script type="module">
+            import {a, body, br, div, h1, hr, span} from "../../jtml.js";
+
+            const styles = {
+                backgroundColor : "yellow",
+                width : "320px",
+                margin : "10px",
+                padding : "10px"
+            };
+
+            body(
+                h1("Static Webpage"),
+                div(
+                    "This is a vanilla <div> tag with text inside it. ",
+                    "It has a black border because of the 'hello.css' stylesheet. ",
+                    "The header styles come from the common 'examples.css' stylesheet."
+                ),
+                div(
+                    "This is a <div> tag. It's yellow because of a call to Tag.styles(). It contains some text.",
+                    hr(),
+                    span("It also contains an orange <span>, right here. The <span> is orange because of a call to Tag.classes().").classes("orange"),
+                    hr()
+                ).styles(styles),
+                a("..", "Directory of JTML Examples")
+            );
+
+        </script>
+</html>

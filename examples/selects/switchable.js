@@ -1,4 +1,4 @@
-import {button, div, select, text} from "../../src/jtml.js";
+import {button, div, select, text} from "../../jtml.js";
 
 /**
 This example demonstrates the ability to change the display by changing the array that
@@ -10,40 +10,37 @@ objects? Like
     { act : "Fry & Laurie", members : ["Stephen Fry", "Hugh Laurie"]}
 Well, we can. Stay tuned.
 **/
-export default function create() {
 
-    const acts = ["The Marx Brothers", "Abbott & Costello", "Monty Python"]
+const acts = ["The Marx Brothers", "Abbott & Costello", "Monty Python"];
 
-    const members = [
-        ["Groucho", "Chico", "Harpo", "Zeppo"],
-        ["Bud Abbott", "Lou Costello"],
-        ["Graham Chapman", "John Cleese", "Terry Gilliam", "Eric Idle", "Terry Jones", "Michael Palin"]
-    ];
+const members = [
+    ["Groucho", "Chico", "Harpo", "Zeppo"],
+    ["Bud Abbott", "Lou Costello"],
+    ["Graham Chapman", "John Cleese", "Terry Gilliam", "Eric Idle", "Terry Jones", "Michael Palin"]
+];
 
-    let listIndex = 0;
+let listIndex = 0;
 
-    function show(tag, index) {
-        index = index % acts.length;
-        if (index < 0) {
-            index = acts.length - 1;
-        }
-        tag.set("act",     acts[index]);
-        tag.set("members", members[index]);
-        return index;
+function show(jtml, index) {
+    index = index % acts.length;
+    if (index < 0) {
+        index = acts.length - 1;
     }
+    jtml.set("act",     acts[index]);
+    jtml.set("members", members[index]);
+    return index;
+}
 
-    return [
-        div(text().bind("act", acts[0])).style("backgroundColor", "palegoldenrod").style("fontSize", "larger"),
-        // Make a <select> with the 0th list initially visible.
-        select().bind("members", members[0]).size(5),
-        div(
-            // Create a button with an on-click handler to change to the next list.
-            button("Next List").click(tag => {
-                listIndex = show(tag, listIndex + 1);
-            }),
-            button("Prev List").click(tag => {
-                listIndex = show(tag, listIndex - 1);
-            })
-        ).classes("inline-block")
-    ];
-};
+export default [
+    div(
+        // Switch to the previous act
+        button("<").click(jtml => listIndex = show(jtml, listIndex - 1)),
+        // Name of the current act
+        text().bind("act", acts[listIndex]),
+        // Switch to the next act
+        button(">").click(jtml => listIndex = show(jtml, listIndex + 1))
+    ).id("act"),
+    // Make a <select> with the 0th list initially visible.
+    select().bindValues("members", members[listIndex]).size(5),
+    
+];

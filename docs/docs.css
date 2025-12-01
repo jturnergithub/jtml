@@ -1,0 +1,118 @@
+body {
+    background-color: #3b9334;
+    margin: 0;
+}
+
+.code, .code * {
+    font-family : Consolas, "courier new";
+}
+
+.jtml-tab {
+    font-weight : bold;
+    background-image : linear-gradient(to bottom, black, #3b9334);
+    color : white;
+    padding-left : 10px;
+    padding-right : 10px;
+}
+
+.jtml-tab.jtml-selected {
+    background-image : linear-gradient(to bottom, #3b9334, white);
+    text-shadow : 2px 2px 2px black;
+}
+
+.collapsible-section .jtml-collapsible-image {
+    border-radius : 50%;
+    border : 3px solid #3b9334;
+    padding : 5px;
+}
+
+.term {
+    font-weight : bold;
+    font-style : italic;
+}
+
+.highlighted {
+    background-color : yellow;
+}
+
+.keyword {
+    color : white;
+    background-color :  #3b9334;
+    padding : 0px 5px;
+}
+
+.note {
+    border : 1px solid black;
+    background-color : palegoldenrod;
+    margin : 12px auto;
+    padding : 8px;
+    width : 75%;
+}
+
+.side-by-side {
+    padding : 8px;
+    display : flex;
+}
+
+.side-by-side > div {
+    margin : 4px;
+    border : 1px solid black;
+    padding : 0px 8px;
+}
+
+.question {
+    font-size : large;
+    font-weight : bold;
+}
+
+#banner {
+    background-image : linear-gradient(to bottom, black, #3b9334);
+}
+
+#banner-text {
+    height : 120px;
+    margin : auto;
+    display : block;
+}
+
+#small-logo {
+    width : 80px;
+    height : 80px;
+    float : left;
+    margin-top : 20px;
+}
+
+#page {
+    width : 95%;
+    background-color : white;
+    padding : 10px;
+    margin : auto;
+    border-radius : 8px;
+}
+
+#pager button {
+    width : 25px;
+    height : 25px;
+    margin : 5px;
+    background-color : transparent;
+    border : 1px solid black;
+    border-radius : 50%;
+}
+
+#pager button:hover {
+    background-color : aliceblue
+}
+
+#pager button:active {
+    background-color : lightgray;
+}
+
+#pager button img {
+    width : 15px;
+    height : 15px;
+
+}
+
+#api-page {
+    display : flex;
+}

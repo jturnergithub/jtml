@@ -1,0 +1,86 @@
+* {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+*:focus {
+    outline: none;
+}
+
+h1 {
+    background-image: linear-gradient(to right, lime, white, yellow);
+    padding: 2px;
+    border: 5px solid white;
+}
+
+#board {
+    width: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+#board > * {
+    margin: auto;
+}
+
+#settings {
+    border: 1px solid black;
+    border-radius: 8px;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+}
+
+#settings.jtml-disabled {
+    color : gray;
+}
+
+#settings > div {
+    margin: auto;
+}
+
+#settings .jtml-radio {
+    display: inline-block;
+}
+
+#solution {
+    display: inline-flex;
+    margin: 2px;
+}
+
+#solution .digit {
+    color: white;
+}
+
+.guess {
+    display: flex;
+    align-items: center;
+}
+
+.digits {
+    display: flex;
+    margin: 2px;
+}
+
+.digit, .sum {
+    width: 25px;
+    height: 25px;
+    border: 1px solid black;
+    margin: 2px;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.digit.easy.bull, .sum.bull, #solution .bull {
+    background-color: lime;
+}
+
+.digit.easy.cow, .sum.cow {
+    background-color: yellow;
+}
+
+.summary {
+    display: flex;
+    justify-content: center;
+    width: 75px;
+}

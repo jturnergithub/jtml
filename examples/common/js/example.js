@@ -1,6 +1,6 @@
-import {div, h2} from "../../../src/jtml.js";
+import {div, h2} from "../../../jtml.js";
 
-export default function exampleDiv(header, ...contents) {
+export default function example(header, ...contents) {
     return div(
         h2(header),
         ...contents

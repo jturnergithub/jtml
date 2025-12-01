@@ -1,0 +1,7 @@
+* {
+    font-family: sans-serif;
+}
+
+tr.product-row:not(.in-stock) {
+    color: red;
+}

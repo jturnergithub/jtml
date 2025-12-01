@@ -1,17 +1,14 @@
-export * from "./Binding.js";
+export * from "./AliasBinding.js";
 export * from "./ChildBinding.js";
-export * from "./IndexBinding.js";
-export * from "./PropertyBinding.js";
+export * from "./ValueBinding.js";
+export * from "./Binder.js";
 
+import Binder from "./Binder.js";
 import * as BindUtil from "./BindUtil.js";
+import Scope from "./Scope.js";
 
 export const format = BindUtil.format;
 export const Trigger = BindUtil.Trigger;
 
-import Scope from "./Scope.js";
-export const binder = Scope.current;
-
-export function scope(alias, key, discriminant) {
-    return new Scope().alias(alias, format(key, discriminant));
-}
-
+export const binder = () => Binder.current();
+export const scope = () => new Scope();

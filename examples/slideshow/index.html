@@ -1,0 +1,54 @@
+<html>
+    <head>
+        <title>Slideshow</title>
+        <link rel="stylesheet" href="../../jtml.css"/>
+        <link rel="stylesheet" href="../examples.css"/>
+        <link rel="stylesheet" href="./slideshow.css"/>
+    </head>
+    <body>
+        <script type="module">
+            import {body, button, div, h1, h2, img, span, text} from "../../jtml.js";
+            import example from "../common/js/example.js";
+            import footer from "../common/js/footer.js";
+            import slides from "./data/slides.js"
+
+            let slideIndex = 0;
+
+            function slide(jtml, index) {
+                if (index < 0) {
+                    index = slides.length + index;
+                }
+                else {
+                    index = index % slides.length;
+                }
+                jtml.set("slide", slides[index]);
+                slideIndex = index;
+            }
+
+            body(
+                h1("Slideshow"),
+                div(
+                    h2("Imaginary Worlds"),
+                    div(
+                        button(img("../common/assets/left-arrow.gif"))
+                            .id("prev")
+                            .click((jtml, index) => slide(jtml, slideIndex - 1)),
+                        div(text().bind("slide.title")).id("title-text"),
+                        button(img("../common/assets/right-arrow.gif"))
+                            .id("next")
+                            .click((jtml, index) => slide(jtml, slideIndex + 1))
+                    ).id("title"),
+                    div(
+                        div(
+                            img().bind("slide.src").id("planet-image"),
+                        ).classes("inline-block"),
+                        div(text().bind("slide.caption")).id("caption")
+                    ).id("middle"),
+                ).id("slide").set("slide", slides[0]),
+                footer
+            );
+
+        </script>
+        
+    </body>
+</html>

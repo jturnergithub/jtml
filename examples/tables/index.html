@@ -1,0 +1,42 @@
+<html>
+    <head>
+        <title>Example: Tables</title>
+        <link rel="stylesheet" href="../../jtml.css"/>
+        <link rel="stylesheet" href="../examples.css"/>
+        <link rel="stylesheet" href="./tables.css"/>
+    </head>
+   
+    <script type="module">
+
+        import Tag from "../../src/markup/Tag.js";
+        import {body, h1, table, td, tr} from "../../jtml.js";
+        import example from "../common/js/example.js";
+        import footer from "../common/js/footer.js";
+        import simple from "./simple.js";
+        import colors from "./colors.js";
+        import clickable from "./clickable.js";
+        import mutable from "./mutable.js"
+
+        body(
+            h1("Tables"),
+            example(
+                "Simple Table",
+                simple
+            ).classes("inline-block"),
+            example(
+                "Color Palette",
+                colors
+            ).classes("inline-block"),
+            example(
+                "Clickable",
+                clickable
+            ).classes("inline-block"),
+            example(
+                "Fully Mutable",
+                mutable
+            ),
+            footer
+        );
+
+    </script>
+</html>

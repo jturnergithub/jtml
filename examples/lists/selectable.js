@@ -1,5 +1,5 @@
 import JTMLConstants from "../../src/JTMLConstants.js";
-import {ul, li} from "../../src/jtml.js";
+import {ul, li} from "../../jtml.js";
 
 export default function create(multi = JTMLConstants.SelectionMode.SINGLE, ...items) {
     const selectableList = ul(...items)

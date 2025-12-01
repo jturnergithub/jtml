@@ -1,6 +1,5 @@
 import JTMLComponentFactory from "../core/JTMLComponentFactory.js";
 import JTMLNode from "../core/JTMLNode.js";
-import TextTagFactory from "./TextTagFactory.js";
 
 export default class JTMLText extends JTMLNode {
 
@@ -9,7 +8,7 @@ export default class JTMLText extends JTMLNode {
     }
 
     toDOMNode(text) {
-        return document.createTextNode(text);
+        return document.createTextNode(text ?? "");
     }
 
     toArgs() {
@@ -20,8 +19,20 @@ export default class JTMLText extends JTMLNode {
         this.domNode.nodeValue = string === undefined ? "" : string.toString();
     }
 
-    evaluate() {
+    inspect() {
         return this.domNode.nodeValue;
+    }
+
+    evaluate() {
+        return this.inspect();
+    }
+
+    find(test) {
+        const found = [];
+        if (test(this)) {
+            found.push(this);
+        }
+        return found;
     }
 
     toString() {
@@ -30,3 +41,17 @@ export default class JTMLText extends JTMLNode {
 }
 
 JTMLText.FACTORY = text => JTMLComponentFactory.INSTANCE(text) || new JTMLText(text);
+
+// better way?
+
+JTMLText.textFactory = content => {
+    if (content instanceof JTMLNode) {
+        return content;
+    }
+    else if (content === undefined) {
+        return new JTMLText();
+    }
+    else {
+        return new JTMLText(content.toString());
+    }
+}

@@ -1,0 +1,31 @@
+* {
+    font-family: sans-serif
+}
+
+body {
+    display: flex;
+}
+
+#squares {
+    display: grid;
+    grid-template-rows: 40px 40px 40px;
+    grid-template-columns: 40px 40px 40px;
+    border: 1px solid black;
+    width: fit-content;
+}
+
+.square {
+    text-align: center;
+    border: 1px solid black;
+    font-size: 36px;
+    font-weight: bold;
+}
+
+.highlighted {
+    background-color : yellow;
+}
+
+#history {
+    display: flex;
+    flex-direction: column;
+}

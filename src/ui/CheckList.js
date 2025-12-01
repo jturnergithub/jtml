@@ -1,11 +1,12 @@
-import {ul} from "../markup.js";
-import ValueTag from "../markup/ValueTag.js";
+import {img} from "../../jtml.js";
+import ChooserTag from "../markup/ChooserTag.js";
+import CheckListItem from "./CheckListItem.js";
 
-export default class CheckList extends ValueTag {
+export default class CheckList extends ChooserTag {
 
-    constructor(attrs, mutable) {
-        super("ul", attrs);
+    constructor(factory = label => new CheckListItem(label)) {
+        super("div", ChooserTag.Mode.MULTIPLE);
         this.classes("jtml-ui jtml-check-list");
-        this.children.factory = label => new CheckListItem(label, mutable);
+        this.children.factory = CheckListItem.metafactory(factory);
     }
 }

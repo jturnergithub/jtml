@@ -1,0 +1,43 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="../../jtml.css"/>
+        <link rel="stylesheet" href="./compare.css"/>
+        <title>Vue Demo</title>
+    </head>
+    <body>
+        <script type="module">
+
+            import {body, button, containerTag, h1} from "../../jtml.js";
+
+            body(
+                containerTag(
+                    "template",
+                    button("Toggle").set("awesome", true).click(jtml => jtml.toggle("awesome")),
+                    h1("JTML is even more awesome.").visible("awesome"),
+                    h1("Oh no 😢").hidden("awesome")
+                )
+            );
+            
+        </script>
+        <!--
+            Here is the equivalent Vue code, from https://vuejs.org/tutorial/#step-6.
+            
+                <script setup>
+                import { ref } from 'vue'
+
+                const awesome = ref(true)
+
+                function toggle() {
+                    awesome.value = !awesome.value
+                }
+                </script>
+
+                <template>
+                    <button @click="toggle">Toggle</button>
+                    <h1 v-if="awesome">Vue is awesome!</h1>
+                    <h1 v-else>Oh no 😢</h1>
+                </template>            
+           
+        -->
+    </body>
+</html>

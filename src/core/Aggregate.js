@@ -1,14 +1,39 @@
-import {ARRAY_LENGTH_BINDING, format, scope} from "../bind/bind.js";
+import Binder from "../bind/Binder.js"; // TODO: fix bind.js so we don't explicitly import the whole class.
+import {format, scope} from "../bind/bind.js";
 import JTMLComponent from "./JTMLComponent.js";
 import JTMLComponentFactory from "./JTMLComponentFactory.js";
+import JTMLText from "./JTMLText.js";
 
 /**
-An Aggregate is a JTMLComponent that contains other JTMLComponents. The Aggregate can be
-treated eather as its own binding scope or as a container for a number of related
-children. One use is as a pseudo-node: a virtual node, which is not itself
-present in the DOM tree but whose children form a control.
+ * An Aggregate is a JTMLComponent that contains other JTMLComponents. The Aggregate can be
+ * treated eather as its own binding scope or as a container for a number of related
+ * children. One use is as a pseudo-node: a virtual node, which is not itself
+ * present in the DOM tree but whose children form a control.
+ *
+ * The simplest Aggregates are populated explicitly, by the caller simply setting
+ * the contents to other JTMLComponents. The only way to modify such an aggregate
+ * is to construct and add new JTML, or remove existing JTML. A dynamic Aggregate,
+ * which creates new members on the fly, often requires a factory function. The
+ * factory takes in some kind of input and constructs a JTML object from it--
+ * by turning text into a ListItem <li>, for example, or by turning a full-fledged
+ * object into a <div> with text and/or controls inside it.
+ * 
+ * Aggregates can be bound to arrays. Changes to the array structure, or replacing
+ * the bound array with a different array, cause the Aggregate to create or destroy
+ * members as necessary.
+ * 
+ * Separate from this, the members of the Aggregate can themselves be bound. If the
+ * members are created explicitly, this is trivial. If members are to be created
+ * programatically, via the factory function, call the bindItems(key) method; this
+ * ensures that the individual members are bound to "key[0]", "key[42]", and so
+ * forth. This, in turn, allows changes in the bound array's individual elements to 
+ * show up in the HTML.
+ * 
 **/
 export default class Aggregate extends JTMLComponent {
+
+    #factory;
+    #always = [];
 
     /**
      * A factory must be supplied if this aggregate is dynamic.
@@ -25,17 +50,16 @@ export default class Aggregate extends JTMLComponent {
      */
     constructor(factory = JTMLComponentFactory.INSTANCE) {
         super();
-        this.members       = [];
-        this.factory       = factory;
-        this.distributions = [];
+        this.members = [];
+        this.factory = factory;
     }
 
     get factory() {
-        return this.my.factory;
+        return this.#factory;
     }
 
     set factory(factory) {
-        this.my.factory = factory;
+        this.#factory = factory || this.#factory;
         return true;
     }
 
@@ -117,7 +141,7 @@ export default class Aggregate extends JTMLComponent {
     Appends the arguments, in order, to this Aggregate.
     **/
     addAll(...members) {
-        for (let member of members) {
+        for (const member of members) {
             this.add(member);
         }
         return this;
@@ -131,15 +155,43 @@ export default class Aggregate extends JTMLComponent {
             // functions that return arrays, and similar zany hijinks.
             this.add(member(this.parent));
         }
-        else if (Array.isArray(member)) {
-            this.addAll(...member);
-        }
+        // else if (Array.isArray(member)) {
+        //     this.addAll(...member);
+        // }
         else {
+            // It may be that this Aggregate was created in a different scope--i.e., it doesn't use
+            // the global Binder. Left unchecked, this means that any members that are dynamically
+            // created won't have the same Binder as the rest, and tears will ensue. The dumb way to
+            // fix this is to push, then pop, whatever binder we've got.
+            Binder.push(this.binder());
             // Convert member, if necessary, to a usable JTMLNode instance.
-            member = this.factory(member, this.length);
-            if (member) {
+            member = this.factory(member, this.length, `${this.keys.binding}[${this.length}]`);
+            if (typeof member === "string") {
+                member = new JTMLText(member);
+            }
+            Binder.pop();
+            if (Array.isArray(member)) {
+                this.push(...member);
+            }
+            else {
+                this.push(member);
+            }
+        }
+        return this;
+    }
+
+    /**
+     * Sticks one or more members onto the end of the members array, modifying the DOM.
+     * Skips any members that are undefined. Does the always-do-this callbacks for each
+     * new member.
+     * 
+     * @param  {...any} members 
+     */
+    push(...members) {
+        for (const member of members) {
+            if (member !== undefined) {
                 member.parent = this.parent;
-                for (let callback of this.distributions) {
+                for (let callback of this.#always) {
                     callback(member, this.members.length);
                 }
                 // Stick it in the array.
@@ -147,10 +199,9 @@ export default class Aggregate extends JTMLComponent {
                 // Manifest the DOM node
                 if (this.domNode) {
                     member.appendTo(this.domNode);
-                }    
+                }
             }
         }
-        return this;
     }
 
     /**
@@ -161,45 +212,6 @@ export default class Aggregate extends JTMLComponent {
         this.clear();
         this.addAll(...members);
         return this;
-    }
-
-    /**
-     * Shows the items that are in the items array, and only those items. Extraneous child
-     * JTMLComponents are truncated, or new ones created, as necessary. If they're not already
-     * JTML objects, the new items are
-     * converted the aggregate's factory function.
-     * 
-     * This is expected to be called from a binding, which means that it's
-     * going to be called if the bound value *changes*. That is, if you
-     * replace one array with another, the Aggregate has to display the new
-     * array and not the old one.
-     * 
-     * @param {*} items 
-     */
-    display(items = []) {
-        // 1. Get rid of any members that don't have corresponding items.
-        this.truncate(items.length);
-        // 2. Make any existing members display the associated item value, if there is one.
-        // NOTE: this.length can be shorter than items.length, but it can't be longer.
-        for (let i = 0; i < this.length; i++) {
-            this.members[i].display(items.shift());
-        }
-        // 3. If we've run out of extant members, but we still have items, create a new member for each item.
-        this.addAll(...items);
-
-        // If items.length is 0, there won't be any children, so first and last
-        // are irrelevant
-        // if (items.length) {
-        //     // If the previous array was empty, then there won't be an extant jtml-first.
-        //     // Make one.
-        //     this.members[0].set("jtml-first", true);
-        //     // If the new list adds items, the previous jtml-last is no longerlast
-        //     if (n < 0) {
-        //         this.members[oldLength - 1].set("jtml-last", false);
-        //     }
-        //     this.members[items.length - 1].set("jtml-last", true);
-        // }
-
     }
 
     toJTMLComponent(object) {
@@ -214,7 +226,9 @@ export default class Aggregate extends JTMLComponent {
     /********** Fun with binders **********/
 
     /**
-     * Binding an aggregate to an array means that when the array is replaced by a 
+     * Aggregates should only be bound to arrays.
+     * 
+     * Binding an aggregate means that when the array is replaced by a 
      * different array, the aggregate's children are regenerated or refreshed as
      * necessary. This works just like any other binding: when someone sets the bound value
      * to a different array, this aggregate's display() method is automatically called.
@@ -225,20 +239,20 @@ export default class Aggregate extends JTMLComponent {
      * That is, if list item[3] changes from "foo" to "bar", the associated ul or ol tag
      * knows to display "bar" for its third item. 
     **/
-    bind(key, initial = []) {
-        super.bind(key, initial);
-    }
+    // bind(key, initial = [], callback) {
+    //     super.bind(key, initial);
+    //     this.always((jtml, index) => jtml.bindValue(`${key}[${index}]`))
+    //     return this;
+    // }
 
-    bindItems(key, initial = []) {
-        const self = this;
-        this.keys.binding = key;
-        this.binder().set(key, initial);
-        // When the array itself is swapped out, we may have to create or destroy members
-        this.monitor(key, items => self.fit(items));
-        // When the array is lengthened or shortened in-place, we *also* may have to create or destroy members.
-        // ASSUMPTION: this.get(key) returns the modified array
-        this.monitor(format(key, "length"), () => self.fit(self.get(key)));
-    }
+    // bindItems(key, initial = []) {
+    //     this.keys.binding = key; // Probably should be this.keys.itemBinding
+    //     this.set(key, initial);
+    //     // When the array itself is swapped out, we may have to create or destroy members
+    //     this.monitor(key, items => this.fit(items));
+    //     // Make sure that all existing and new aggregate members get bound to items.
+    //     this.always((jtml, index) => jtml.bindValue(`${key}[${index}]`));
+    // }
 
     /**
      * 1. Truncates this aggregate so that it's no longer than the items.
@@ -247,40 +261,46 @@ export default class Aggregate extends JTMLComponent {
      * 
      * @param {array} items 
      */
-    fit(items = []) {
+    display(items = []) {
+        if (!Array.isArray(items)) {
+            // This is to deal with Javascript's pathological arrays, which not only have a .length
+            // property, but also respond to the ... (spread) operator. The result is that if items
+            // is "JTML", the default logic would add four children: "J", "T", "M", and "L".
+            items = [items];
+        }
         // Remove any members that don't have corresponding items.
         this.truncate(items.length);
         // Slice off the new items, if there are any. If length is too long, this produces an empty array.
         const newItems = items.slice(this.length);
         // Add each of the new items.
-        this.extend(newItems);
+        this.addAll(...newItems);
     }
 
     extend(items = []) {
-        const n = items.length - this.length;
+        // const n = items.length - this.length;
         for (let item of items) {
             // Creates a key of the form "foo.bar.baz[3]" or whatever and sets its value to item
-            this.binder().set(format(this.keys.binding, this.length), item);                
+            const key = format(this.keys.binding, this.length);
+            // this.binder().set(key, item);                
             // Indirectly calls the factory function, which turns item
             // into JTML and gives it its own local binder. If the manufactured
             // JTML contains bindings, they should trigger!
             this.add(item);
+            // Make sure that the (newest) member displays correctly if the underlying value changes.
+            this.members[this.length - 1].bind(key);
+
         }
         return n;
     }
 
-        /**
-     * Returns the number of members removed.
+    /**
+     * Modifies the DOM tree by removing nodes indexed higher than length.
      * 
-     * @param {*} length 
+     * @param {number} length 
      * @returns The number of removed members
      */
     truncate(length = 0) {;
-        if (length >= this.members.length) {
-            return 0;
-        }
-        else {
-            let n = this.members.length - length;
+        if (length < this.members.length) {
             if (this.domNode){
                 for (let i = length; i < this.members.length; i++) {
                     this.domNode.removeChild(this.members[i].domNode);
@@ -289,8 +309,8 @@ export default class Aggregate extends JTMLComponent {
             // TODO: this still leaves bound callbacks that refer to the deleted
             // items, which is absurd. Should use a WeakMap or something?
             this.members.length = length;
-            return n;
         }
+        return this;
     }    
 
     /**
@@ -323,28 +343,10 @@ export default class Aggregate extends JTMLComponent {
         }
     }
 
-    // /**
-    // Returns a list of all DOM nodes in this Aggregate's direct children. If some
-    // of those children are themselves Aggregates, this method will be called
-    // recursively. The result is a *shallow* list of DOM nodes that are directly
-    // underneath us in the DOM tree.
-    // **/
-    // domNodes() {
-    //     let nodes = [];
-    //     for (let member of this.members) {
-    //         nodes.push(member.domNodes());
-    //     }
-    //     return nodes;
-    // }
-
-    // display(members = []) {
-    //     this.replace(...members);
-    // }
-
     /********** Utility methods **********/
 
     click(callback) {
-        for (let member of this.members) {
+        for (const member of this.members) {
             member.click(callback);
         }
         return this;
@@ -355,7 +357,7 @@ export default class Aggregate extends JTMLComponent {
     }
 
     disabled(key, value, disabled = true) {
-        this.distribute(member => {
+        this.always(member => {
             if (member.disabled) { // Make sure the member can be disabled
                 member.disabled(key, value, disabled);
             }
@@ -363,29 +365,34 @@ export default class Aggregate extends JTMLComponent {
     }
 
     /**
-    Applies callbacks to everything directly contained by the aggregate.
-    Each callback is called for each present AND FUTURE member.
-    **/
-    distribute(...callbacks) {
+    * Specifies that each of the provided functions should always be called
+    * when a member is added to the aggregate, INCLUDING EXISTING MEMBERS.
+    * 
+    * A callback's signature is (jtml, index), where jtml is the aggregate
+    * member and index is its position in the aggregate.
+    */
+    always(...callbacks) {
+        const self = this;
         for (let callback of callbacks) {
-            this.distributions.push(callback);
+            this.#always.push(callback);
             for (let i = 0; i < this.members.length; i++) {
                 callback(this.members[i], i);
             }
         }
+        return this;
     }
 
-    find(search) {
-        let members = [];
-        if (this.matches(search)) { // Or if (search.matches(this)) ?????
-            members.push(this);
-        }
-        for (let member of this.members) {
-            if (member.find) {
-                member.push(member.find(search));
+    find(test, deep) {
+        const found = [];
+        for (const member of this.members) {
+            if (test(member)) {
+                found.push(member);
+            }
+            if (deep) {
+                found.push(...member.find(test, deep));
             }
         }
-        return members;
+        return found;
     }
 
     indexOf(member) {

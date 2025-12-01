@@ -1,4 +1,4 @@
-import ChoiceTag from "./ChoiceTag.js";
+import {deproxify} from "../bind/Binding.js";
 import ValueTag from "./ValueTag.js";
 
 /**
@@ -21,26 +21,48 @@ functionality on top of what the DOM provides.
 **/
 export default class ChooserTag extends ValueTag {
 
-    constructor(name, attrs, factory) {
-        super(name, attrs);
-        this.children.factory = factory;
-        this.event            = "change";
-        // The equality operator is used to determine whether two item values are the
-        // same. By default it's just identity.
-        this.my.equality      = (v0, v1) => v0 === v1;
-        this.my.mode          = ChooserTag.Mode.SINGLE;
+    #mode;
+    #required;
+
+    constructor(name, mode = ChooserTag.Mode.SINGLE) {
+        super(name);
+        this.mode(mode);
+        this.always((jtml, index) => jtml.classes(index % 2 ? "jtml-odd" : "jtml-even"));
+        this.callbacks = {
+            select : [],
+            deselect : []
+        }
     }
 
     /**
-    This chooser's definition of what it means for a selectable item to
-    be "equal to" some value. By default, it's good old ===.
-    **/
-    equality(equality) {
-        if (equality === undefined) {
-            return this.my.equality;
+     * Gets or sets the selection mode--single or multiple. Subclasses may override this.
+     *
+     * @param {Mode.SINGLE|Mode.MULTIPLE} mode 
+     * @returns 
+     */
+    mode(mode) {
+        if (mode === undefined) {
+            return this.#mode;
         }
         else {
-            this.my.equality = equality;
+            this.#mode = mode;
+            return this
+        }
+    }
+
+    /**
+     * Sets the selection to required or not-required. This has no effect if in multiple-select
+     * mode. In single-select mode, setting required = true means that clicking on a selected
+     * item doesn't deselect it, and that the first item is selected by default.
+     * 
+     * @param {boolean} required 
+     */
+    required(required) {
+        if (required === undefined) {
+            return this.#required;
+        }
+        else {
+            this.#required = required;
             return this;
         }
     }
@@ -65,220 +87,132 @@ export default class ChooserTag extends ValueTag {
         }
     }
 
-    // id(id) {
-    //     if (id && !this.keys.selection) {
-    //         this.keys.selection = id + "-selection";
-    //     }
-    //     return super.id(id);
-    // }
-
-    mode(mode) {
-        if (mode === undefined) {
-            return this.my.mode;
-        }
-        else {
-            this.my.mode = mode;
-            // Temporarily assume that single selection always retains the selection,
-            // and multiple select always toggles the selection.
-            // TODO: single/optional select mode, where there's only a single
-            // selection but clicking on it toggles it off (leaving nothing
-            // selected).
-            let behavior =
-                mode === ChooserTag.SelectionMode.SINGLE
-                    ? ChoiceTag.Behavior.RETAIN
-                    : ChoiceTag.Behavior.TOGGLE;
-            // Every choice has to be given a behavior for when it's clicked, based
-            // on the settings of the parent chooser. It also must be bound to the
-            // correct index. For example, if the chooser is bound to the array "foo",
-            // then the children need to be bound to "foo[0]", "foo[1]", etc.
-            this.children.distribute((choice, index) => choice.behavior(behavior));
-            return this;
-        }
-    }
-
     /**
-    Gets or sets the selectables that are actually, you know, selected.
-    This function is meant for internal use. Users of the chooser object
-    should set its value to the selected item(s) with the display() or
-    value() methods.
-    **/
-    choices(choices) {
-        if (choices === undefined) {
-            // return existing choices
-            return this.selectables().filter(selectable => selectable.selected());
-        }
-        else {
-            // set new choices, unset stale choices, leave everything else alone
-            let existing = this.choices();
-            let self     = this;
-            for (let selectable of this.selectables()) {
-                let test = s => self.equality()(selectable, s);
-                if (existing.some(test) && !choices.some(test)) {
-                    // Deselect
-                    selectable.selected(false);
-                }
-                else if (!existing.some(test) && choices.some(test)) {
-                    // Select
-                    selectable.selected(true);
-                }
-            }
-            return this;
-        }
-    }
-
-    /**
-    This binds the ChooserTag to a selection. The value of the chooser tag is the
+     * Binds the ChooserTag to a selection. The value of the chooser tag is the
     selected thing, or things.
 
-    This method does not bind the chooser tag to an array of values.
+    This method does not bind the chooser tag to an array of values!
     **/
-    bind(key, initial, callback) {
-        if (initial === undefined && this.children.members.length) {
-            initial = this.children.members[0].evaluate();
+    bind(key, initial) {
+        if (initial === undefined) {
+            switch (this.mode()) {
+                case ChooserTag.Mode.MULTIPLE:
+                    initial = [];
+                    break;
+                case ChooserTag.Mode.SINGLE:
+                default:
+                    initial = this.required() ? this.selectables()[0]?.evaluate() : undefined;
+            }
         }
-        this.event = this.event || "click";
-        return super.bind(key, initial, callback);
+        this.keys.binding = key;
+        this.keys.index   = `jtml-${key}-index`;
+        this.event        = this.event || "click";
+        return super.bind(key, initial);
     }
 
     /**
-    Makes some choices selected. Each managed object that is "equal to" one
-    of the values becomes part of the selection.
-
-    Implements the method specified in ValueTag.
-    **/
-    display(values = []) {
-        // TODO: Check selection mode
-        if (!Array.isArray(values)) {
-            values = [values];
+     * Sets the "selected" value to true for those selectable elements whose
+     * value equals a member of the values array. This method is called when any
+     * code sets the value of the ChooserTag's binding.
+     * 
+     * Implements the method specified in ValueTag.
+     * 
+     * @param {[*]} values The values of the selected items, or a single value if in single-
+     * select mode.
+     */
+    display(selections = []) {
+        if (!Array.isArray(selections)) {
+            // For single-select choosers, selections is a lone value. To simplify the code in
+            // this method, convert to a one-item array.
+            selections = [selections];
         }
-        let equality = this.equality();
-        // The filter function passes any child object whose evaluate() function yields
-        // something that's equal to *any* value in the values array.
-        let filter   = selectable => values.some(value => equality(selectable.evaluate(), value));
-        // Reset the selection to be exactly those items that pass the filter
-        this.choices(this.selectables().filter(filter));
+        // HACK. If the selections array is full of proxies, then using indexOf() on it
+        // is unreliable. Replace with array of raw values.
+        selections = selections.map(selection => deproxify(selection));
+        // We're going to want a record of all the selected indices. That's not the same
+        // the index *among the selections*; we want the index *among the selectables*.
+        const indices = [];
+        let i = 0;
+        for (const selectable of this.selectables()) {
+            const value = deproxify(selectable.evaluate());
+            const selected = selections.indexOf(value) !== -1;
+            // Check if state is different
+            const changed = selected !== this.selected(selectable);
+            // Mark the child as selected if its value is anywhere in the selections array.
+            this.selected(selectable, selected);
+            // Keep the index if it's meaningful
+            if (selected) {
+                // Here i is the index of the selectable among its siblings.
+                indices.push(i);
+            }
+            if (changed) {
+                const callbacks = this.callbacks[selected ? "select" : "deselect"];
+                for (const callback of callbacks) {
+                    callback(selectable.evaluate(), i, `${this.keys.binding}[${i}]`);
+                }
+            }
+            i++;
+        }
+        if (this.mode() === ChooserTag.Mode.SINGLE) {
+            // Set bound value
+            this.set(this.keys.index, indices[0]);
+        }
+        else {
+            // Set bound array value
+            this.set(this.keys.index, indices.sort((a, b) => a - b));
+        }
+        return this;
+    }
+    
+    select(callback) {
+        this.callbacks.select.push(callback);
         return this;
     }
 
-    /**
-    Finds the selected components and evaluates each one of them. If this is a single-
-    select, returns the first such (if any). If it's a multi-select, returns all of them.
+    deselect(callback) {
+        this.callbacks.deselect.push(callback);
+        return this;
+    }
+      
+    selectables() {
+        return this.children.members;
+    }
 
-    Implements the method specified in ValueTag.
-    **/
-    evaluate() {
-        let choices = this.choices().map(choice => choice.evaluate());
+    /**
+     * If called with one argument, determines whether a potentially-selectable choice 
+     * is, in fact, selected. If given a boolean second argument, selects or deselects
+     * the choice. By default, asks the selectable item if it's selected. (The default 
+     * for that, in turn, is to check the value of the #selected private member. )
+     * 
+     * Subclasses may override this.
+     * 
+     * @param {tag} selectable 
+     * @param {boolean} selected 
+     * @returns 
+     */
+    selected(selectable, selected) {
+        return selectable.selected(selected);
+    }
+
+    selections() {
+        return this.selectables().filter(selectable => this.selected(selectable));
+    }
+    
+    /**
+     * This method is called when the user clicks on an item. For a single select,
+     * it returns the value of the (hopefully) one selected child, or undefined if
+     * no child is selected. For a multiple select, it returns the values of all
+     * selected children in an array.
+     */
+    inspect() {
+        const selections = this.selections().map(selection => selection.evaluate());
         if (this.mode() === ChooserTag.Mode.SINGLE) {
-            return choices[0];
+            return selections[0];
         }
         else {
-            return choices;
+            return selections;
         }
     }
-
-    /**
-    Gets or sets the list of selections. Operates on Selection objects. This
-    is called when we display() a value; its job is to ensure that that value
-    is selected, and nothing else is.
-
-    For single selects, that's trivial. For multiselects, there are three cases:
-    1. Things that WERE selected and ARE selected should be left alone.
-    2. Things that WERE selected and ARE NOT selected should be deselected.
-    3. Things that WERE NOT selected and ARE selected should be selected.
-    **/
-    selections(selections) {
-        if (selections === undefined) {
-            // return existing selections
-            return this.children.members
-                .filter(child => child.selected())
-                .map(child => child.toSelection());
-        }
-        else {
-            // set new selections, unset stale selections, leave everything else alone
-            let prev = this.selections().map(selection => selection.value);
-            let curr = selections.map(selection => selection.value);
-            for (let child of this.children) {
-                let value = child.evaluate();
-                let test = element => this.comparator()(value, element);
-                if (prev.some(test) && !curr.some(test)) {
-                    child.selected(false);
-                }
-                else if (!prev.some(test) && curr.some(test)) {
-                    child.selected(true);
-                }
-            }
-        }
-    }
-
-    // move(from, amount) {
-    //     // Hint: this array is actually an array proxy--thank you, Binder object--
-    //     // and modifying it will notify all the monitors.
-    //     let array = this.get(this.keys.items);
-    //     let to = from + amount;
-    //     if (to >= 0 && to < array.length) {
-    //         // delete at from and remember value
-    //         let item = array.splice(from, 1)[0];
-    //         // reinsert at to
-    //         array.splice(to, 0, item);
-    //         // rejigger selection if needed
-    //         let selection = this.selection();
-    //         if (selection) {
-    //             if (selection.index === from) {
-    //                 // A selected item has moved up or down.
-    //                 // this.select(this.children.members[to], true);
-    //             }
-    //             else {
-    //                 let lower = Math.min(from, to);
-    //                 let upper = Math.max(from, to);
-    //                 if (selection.index >= lower && selection.index <= upper) {
-    //                     this.select(this.children.members[selection.index - Math.sign(amount)], true);
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     return this;
-    // }
-    //
-    // doStuff(from, distance) {
-    //     let to         = from + distance;
-    //     let lower      = Math.min(from, to);
-    //     let upper      = Math.max(from, to);
-    //     let selections = this.selection();
-    //     if (!Array.isArray(selections)) {
-    //         selections = [selections];
-    //     }
-    //     for (let selection of selections) {
-    //         if (selection.index === from) {
-    //             selection.index = to;
-    //         }
-    //         else if (selection.index >= lower && selection.index <= upper) {
-    //             selection.index -= Math.sign(distance);
-    //         }
-    //     }
-    //     // update the value, which causes a display refresh
-    //     this.set(this.keys.selection, selections);
-    // }
-    //
-    // remove(index) {
-    //     let array = this.get(this.keys.items);
-    //     // Remove the item. This triggers the binding for ListTag.display(),
-    //     // and indirectly triggers the binding for the ChoiceTag bound to the
-    //     // removed index.
-    //     array.splice(index, 1);
-    //     let selection = this.selection();
-    //     if (selection) {
-    //         let children = this.children.members;
-    //         if (!children.length) {
-    //             this.unsetSelection();
-    //         }
-    //         else if (selection.index === index) {
-    //             this.select(children[Math.min(index, children.length - 1)], true);
-    //         }
-    //         else if (selection.index > index) {
-    //             this.select(children[selection.index - 1], true);
-    //         }
-    //     }
-    // }
 
 }
 

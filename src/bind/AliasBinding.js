@@ -1,86 +1,79 @@
-import AbstractBinding from "./AbstractBinding.js";
-import * as BindUtil from "./BindUtil.js";
+import Binding from "./Binding.js";
 
 /**
- * There are three separable things to be done with a movable alias.
+ * JTML has two types of aliases. The simpler sort is an immobile one: it says that
+ * for some time, or in some scope, "foo" should be treated as a synonym for "bar.baz",
+ * or whatever. AliasBinding supports the other sort: an alias that can be moved so
+ * that it points, at different time, to different bindings. An obvious example is the
+ * concept of "the active player" in any game, which necessarily switches many times.
  * 
- * 1. Establish that the alias exists.
- * 2. Point it to a particular target.
- * 3. Bind to (or through) it.
+ * An AliasBinding has no value of its own; its value is the value of its basis binding,
+ * or undefined if there isn't one. It may have an oldValue property separate from the
+ * basis oldValue, because switching the alias to a different basis is equivalent to
+ * changing its value.
  * 
- * #2 necessarily entails #1, so they can be done in tandem.
+ * Callbacks can be attached to an AliasBinding. They're triggered when the alias switches
+ * to another basis *or* when the basis callbacks are triggered. See Binding for
+ * further details.
+ * 
+ * AliasBindings may be children of other binding subclasses (ValueBinding, ChildBinding).
+ * Their own children, however, are other AliasBindings.
+ * 
+ * In principle, AliasBindings can be based on other AliasBindings. Don't push it. And
+ * for God's sake don't make them circular.
  */
-export default class AliasBinding extends AbstractBinding {
+export default class AliasBinding extends Binding {
 
-    #target;
+    #basis;
     #oldValue;
 
-    constructor(key, target) {
-        super(key);
-        this.target = target;
-        // When the target value changes out from under us, we need to xxx out the
-        // old value that we have stored. NB: this will always be the very first callback invoked.
-        // this.callbacks.push((newValue, oldValue) =>  this.oldValue = undefined);
+    constructor(key, parent) {
+        super(key, parent);
     }
 
-    get target() {
-        return this.#target;
+    get basis() {
+        return this.#basis;
     }
 
-    set target(target) {
-        if (this.#target) {
-            // We no longer care about updates to the old target.
-            this.target.forget(...this.callbacks);
-            // However, in changing targets, we've changed the "old" value of the alias.
-            // this.oldValue = this.rawValue;
-            this.oldValue = this.value;
-        }
-        this.#target = target;
-        if (this.#target) {
-            // We do care about updates to the new target. N.B. monitor() invokes the callbacks, as per standard behavior.
-            this.target.monitor(...this.callbacks);
-        }
-        else {
-            // If the alias is set to point off into the blue, with no target, we need to invoke its own callbacks
-            // to let them know that its value is now undefined.
-            super.trigger();
-        }
-        // Handle the parallel alias-binding hierarchy.
-        if (this.children) {
+    set basis(basis) {
+        // Not only avoids extra work, but guards against circular logic ...
+        if (basis !== this.basis) {
+            if (this.basis) {
+                // Keep the value of the old referent as the "previous" value
+                this.oldValue = this.rawValue;
+                // We no longer care about updates to the old basis.
+                this.basis.unlink(this);
+            }
+            this.#basis = basis;
+            if (this.basis) {
+                // Tell the basis to trigger this alias when it's triggered itself.
+                this.basis.link(this);
+            }
+            this.trigger(); // Do it manually, since the alias has indeed changed
+            // Handle the parallel alias-binding hierarchy.
             for (const child of Object.values(this.children)) {
-                child.target = this.target.child(child.discriminant);
-            }    
+                child.basis = this.basis.child(child.discriminant);
+            }
         }
-    }
-
-    different(value) {
-        return !!this.target?.different(value);
-    }
-
-    monitor(...callbacks) {
-        // Remember these callbacks so they can be moved if the AliasBinding is retargeted.
-        this.callbacks.push(...callbacks);
-        // We also need the current target to call these callbacks when its value changes in-place,
-        // without this AliasBinding being redirected.
-        if (this.target) {
-            this.target.monitor(...callbacks);
-        }
-    }
-
-    /**
-     * When the binder sets the value of a binding, that binding's callbacks are triggered. An AliasBinding
-     * doesn't have its own value; it points to a target, where the value is stored. Triggering only the
-     * AliasBinding's callbacks would leave anyone who's monitoring the target in the dark. In fact, all the
-     * callback here have been stuck into the target! So we just delegate.
-     * 
-     * @param  {...function} callbacks 
-     */
-    trigger(...callbacks) {
-        this.target?.trigger(...callbacks);
     }
 
     get oldValue() {
-        return this.#oldValue ?? this.target?.oldValue;
+        return this.#oldValue ?? this.basis?.oldValue;
+    }
+
+    set oldValue(value) {
+        this.#oldValue = value;
+    }
+
+    set(value) {
+        if (this.basis) {
+            this.basis.set(value);
+        }
+        return this;
+    }
+
+    get oldValue() {
+        return this.#oldValue ?? this.basis?.oldValue;
     }
 
     set oldValue(value) {
@@ -88,66 +81,44 @@ export default class AliasBinding extends AbstractBinding {
     }
 
     get rawValue() {
-        return this.target?.rawValue;
+        return this.basis?.rawValue;
     }
 
-    get value() {
-        return this.target?.value;
+    set rawValue(value) {
+        throw new Error("Attempt to directly set the raw value of an alias.")
     }
 
-    set value(value) {
-        if (this.target) {
-            this.target.value = value;
+    set(value) {
+        if (this.basis) {
+            // There might be something in the local #oldValue, if this alias has been redirected.
+            // If so, it's no longer correct; remove it.
+            this.#oldValue = undefined;
+            // Delegate to the basis, which will set its own values directly (indirectly setting this
+            // alias's values) and also trigger all the callbacks (including this alias's callbacks).
+            this.basis.set(value);
         }
     }
 
+    /**
+     * Delegates to the basis binding. If there's no basis, always false.
+     * 
+     * @param {Binding} that 
+     * @returns true if the bindings' values are equal.
+     */
     equals(that) {
-        return !!this.target?.equals(that);
+        return !!this.basis?.equals(that);
     }
 
     /**
-     * Regrettably, we need to have a parallel hierarchy of AliasBindings that shadows the hierarchy
-     * of real bindings. It boils down to redirects:
-     * 
-     * binder.alias("current-player", "game.players[0]"); // Establishes an alias
-     * text().bind("current-player.name"); // Creates some text, which updates whenever the name changes
-     * binder.redirect("current-player", "game.players[1]"); // Moves the alias to the next player
-     * 
-     * Without an alias hierarcy, step 2 above puts a callback into the target of the binding--that is, into 
-     * the "game.players[0].name" binding. That callback just sits there even after step 3, which says that
-     * the current player is now someone else. It'll never be called unless player[0]'s name changes!
-     * 
-     * To handle this correctly, step 2 must put a callback into the child AliasBinding "current-player.name".
-     * When the "current-player" alias gets redirected, the child aliases also get redirected.
-     * 
-     * @param {string} discriminant 
-     * @returns 
+     * The child of an AliasBinding is another AliasBinding. Its basis
+     * is derived from this parent's basis. E.g., if this parent is based on
+     * { name : "Fred" }, the child binding "name" is based on a binding
+     * to that object's "name" property.
      */
-    spawn(discriminant) {
-        this.children = this.children || BindUtil.container(discriminant); // TODO: make consistent with AbstractBinding
-        return super.spawn(discriminant, () => 
-            new AliasBinding(
-                discriminant, 
-                this.target.child(discriminant)
-            )
-        );
-    }
-
-    /**
-     * If there's a target, delegate to it. If not, try the children.
-     * 
-     * @param {*} path 
-     * @returns 
-     */
-    seek(path) {
-        if (this.target) {
-            return this.target.seek(path);
-        }
-        else {
-            // If there's a child that is itself an AliasBinding, and the super.seek() method
-            // goes recursive, we should end up back in *this* method ...
-            return super.seek(path);
-        }
+    procreate(discriminant) {
+        const child = new AliasBinding(discriminant, this);
+        child.basis = this.basis?.child(discriminant);
+        return child;
     }
 
 }

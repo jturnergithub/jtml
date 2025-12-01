@@ -1,132 +1,113 @@
 import ChooserTag from "../markup/ChooserTag.js";
+
 /**
-A Chooser wraps a ChooserTag around something that does not
-intrinsically have the chooser nature. For example:
+A Chooser wraps a <div> around another tag, where the wrapped tag is something that
+innately lacks the chooser nature. For example
 * A <ul> used as a menu
 * A <table> where the user can click on a <tr> to select it
 * A <div> whose children are selectable <div>s with formatted info
-* A palette of <img> or <span> tags
+* A palette of <img> tags
 
-And so forth.
+And so forth. It's not intended for things that are intrinsically choosable (selects, options,
+radio buttons).
 
 The upshot is that the Chooser has to do stuff that a <select>, for example,
-does for itself. Specifically, it has to:
-* Manage its own mode (single or multiple selection)
-* Maintain a list of selectable elements
-* Take a value and select it
-** If in single-select mode, and there was something else selected, deselect that
-** If in multiple-select mode, make all the correct transitions
-
+does for itself. 
 **/
 export default class Chooser extends ChooserTag {
 
-    constructor(tag, mode = ChooserTag.Mode.SINGLE, equality = (v0, v1) => v0 === v1) {
-        super("div", {}, child => child);
-        this
-            ._(tag)
-            .classes("jtml-chooser")
-            .mode(mode)
-            .equality(equality);
-        this.my.selectables = [];
-        // When the tag adds a new child--e.g., a new item is added to a <ul>--we need to
-        // know about it, so that we can add a peer to the child that handles its selection
-        // state.
-        let self = this;
-        let prev = undefined;
-        tag.children.distribute(child => {
-            let behavior = self.mode() === ChooserTag.Mode.SINGLE ? Selectable.ClickBehavior.SELECT : Selectable.ClickBehavior.TOGGLE;
-            let selectable = new Selectable(child, behavior);
-            child.multiple(true);
-            child.classes("jtml-chooser-selectable");
-            child.monitor(Selectable.SELECTED_KEY, selected => {
-                if (selected && self.mode() === ChooserTag.Mode.SINGLE) {
-                    if (prev) {
-                        prev.selected(false);
-                    }
-                    prev = selectable;
-                }
-                if (self.keys.binding) {
-                    self.set(self.keys.binding, self.evaluate());
-                }
-            });
-            this.selectables().push(selectable);
+    #mode;
+
+    constructor(tag, mode) {
+        super("div", mode);
+        this._(tag);
+        this.event = "click";
+        this.classes("jtml-chooser");
+        tag.classes("jtml-chooser-content");
+    }
+
+    get tag() {
+        return this.children.members[0];
+    }
+
+    bind(key, initial) {
+        this.bindChoices(key);
+        super.bind(key, initial);
+        return this;
+    }
+    
+    bindValues(key = this.tag.children.keys.binding) {
+        this.tag.always((jtml, index) => {
+            // When any selectable item has its bound value changed out from under it,
+            // explicitly get hold of the new value, so it can be used to decide
+            // what's selected.
+            jtml.monitor(`${key}[${index}]`, value => jtml.value(value));
+            // Also notify the chooser itself, so that its display() method is called;
+            // otherwise any selection change won't be shown.
+            this.monitor(`${key}[${index}]`);
         });
+        return this;
     }
 
-    mode(mode) {
-        if (mode === undefined) {
-            return this.my.mode;
-        }
-        else {
-            this.my.mode = mode;
-            return this;
-        }
+    bindChoices(key) {
+        this.tag.always((jtml, index) => this.bindChoice(jtml, index, key));
     }
 
-    selectables() {
-        return this.my.selectables;
+    bindChoice(jtml, index, key) {
+        // jtml.keys.binding = jtml.keys.binding || `${key}[${index}]`;
+        jtml.keys.selected = `jtml-selected-${key}[${index}]`;
+        jtml.classes("jtml-selected", jtml.keys.selected);
+        jtml.click(() => this.clickOn(jtml));
     }
 
     /**
-    Makes some choices selected. Each managed object that is "equal to" one
-    of the values becomes part of the selection.
-    **/
-    display(values = []) {
-        // TODO: Check selection mode
-        if (!Array.isArray(values)) {
-            values = [values];
-        }
-        let equality = this.equality();
-        // The filter function passes any child object whose evaluate() function yields
-        // something that's equal to *any* value in the values array.
-        let filter   = selectable => values.some(value => equality(selectable.evaluate(), value));
-        // Reset the selection to be exactly those items that pass the filter
-        this.choices(this.selectables().filter(filter));
-        return this;
-    }
-};
-
-/**
-Peer to a tag that worries about its selection state.
-**/
-class Selectable {
-
-    constructor(tag, behavior = Selectable.ClickBehavior.SELECT) {
-        this.tag      = tag;
-        this.behavior = behavior
-        // When the bound value "jtml-selected" is set to true, then the tag
-        // has the class ".jtml-selected".
-        this.tag.classes(Selectable.SELECTED_CLASSES, Selectable.SELECTED_KEY);
-        let self = this;
-        this.tag.click(() => {
-            if (self.behavior === Selectable.ClickBehavior.TOGGLE) {
-                self.selected(!self.selected());
+     * Callback function for when the user clicks on any selectable item in the Chooser.
+     * In single-select mode, sets the bound value to be equal to the selectable's value if selecting,
+     * or to undefined if deselecting. If a selection is required, then this is always considered
+     * to be selecting.
+     * In multi-select mode, adds the selectable's value to the bound array if selecting, or removes
+     * it if deselecting.
+     * 
+     * @param {Tag} jtml The item that the user clicked
+     */
+    clickOn(jtml) {
+        if (!this.disabled() && !jtml.disabled()) {
+            if (this.mode() === Chooser.Mode.SINGLE) {
+                const selecting = this.required() || !this.selected(jtml);
+                this.set(this.keys.binding, selecting ? jtml.evaluate() : undefined)
             }
-            else if (self.behavior === Selectable.ClickBehavior.SELECT && !self.selected()) {
-                self.selected(true);
+            else {
+                const selections = this.get(this.keys.binding) || this.set(this.keys.binding, []).get(this.keys.binding);
+                const index      = selections.indexOf(jtml.evaluate());
+                if (index === -1) {
+                    selections.push(jtml.evaluate());
+                }
+                else {
+                    selections.splice(index, 1);
+                }
             }
-        });
-    }
-
-    evaluate() {
-        return this.tag.evaluate();
-    }
-
-    selected(selected) {
-        if (selected === undefined) {
-            return this.tag.get(Selectable.SELECTED_KEY);
-        }
-        else {
-            this.tag.set(Selectable.SELECTED_KEY, selected);
         }
     }
 
-};
+    /**
+     * Returns an array of JTML Tags that can be selected. By default, these are the
+     * direct children of this Chooser.
+     * 
+     * @returns The selectable descendants
+     */
+    selectables() {
+        return this.tag.children.members;
+    }
 
-Selectable.SELECTED_KEY = "jtml-selected";
-Selectable.SELECTED_CLASSES = "jtml-selected";
-Selectable.ClickBehavior = {
-    IGNORE : "ignore",
-    TOGGLE : "toggle",
-    SELECT : "select"
+    /**
+     * Marks a specific selectable thing as selected or not selected.
+     * 
+     * @param {JTML Tag} selectable 
+     * @param {boolean} selected 
+     * @returns 
+     */
+    selected(selectable, selected) {
+        selectable.set(selectable.keys.selected, !!selected);
+        return super.selected(selectable, selected);
+    }
 }

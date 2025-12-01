@@ -12,8 +12,30 @@ export default class DiscreteValueTag extends ValueTag {
         this.domNode.value = value;
     }
 
-    evaluate() {
+    inspect() {
         return this.domNode.valueAsNumber;
+    }
+
+    /**
+     * Don't permit the user to enter a value that's out of range. If it is, restrict it to a legal min or max.
+     * 
+     * @param {number} value 
+     * @returns A legal numeric value. 
+     */
+    validate(value) {
+        const min = this.min();
+        const max = this.max();
+        if (min && value < min) {
+            console.warn(`${value} is too small; increasing it to ${min}`);
+            return min;
+        }
+        else if (max && value > max) {
+            console.warn(`${value} is too large; decreasing it to ${max}`)
+            return max;
+        }
+        else {
+            return value;
+        }
     }
 
     min(value) {
@@ -28,7 +50,7 @@ export default class DiscreteValueTag extends ValueTag {
     
     max(value) {
         if (value === undefined) {
-            return this.domNode.min;
+            return this.domNode.max;
         }
         else {
             this.domNode.max = value;

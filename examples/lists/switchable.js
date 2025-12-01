@@ -1,4 +1,4 @@
-import {button, div, h2,ul} from "../../src/jtml.js";
+import {button, div, h2,ul} from "../../jtml.js";
 
 /**
 This example demonstrates the ability to change the display by changing the array that

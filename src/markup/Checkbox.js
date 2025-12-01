@@ -1,20 +1,21 @@
-import ValueTag from "./ValueTag.js";
+import InputTag from "./InputTag.js";
 
-export default class Checkbox extends ValueTag {
+export default class Checkbox extends InputTag {
 
-    constructor(attrs) {
-        super("input", attrs || {}, "checkbox");
+    constructor() {
+        super("input", "checkbox");
+        this.toDisplay(checked => !!checked);
     }
 
-    bind(key, initial, callback) {
-        return super.bind(key, !!initial, callback);
+    bind(key, initial) {
+        return super.bind(key, !!initial);
     }
 
-    display(value = false) {
-        this.domNode.checked = value;
+    display(checked = false) {
+        this.domNode.checked = checked;
     }
 
-    evaluate() {
+    inspect() {
         return this.domNode.checked;
     }
 }

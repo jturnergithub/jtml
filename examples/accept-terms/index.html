@@ -1,0 +1,40 @@
+<html>
+    <head>
+        <title></title>
+        <link rel="stylesheet" href="../../jtml.css"/>
+        <link rel="stylesheet" href="../examples.css"/>
+        <link rel="stylesheet" href="./accept-terms.css"/>
+    </head>
+    <body>
+        <script type="module">
+            import {a, body, button, checkbox, div, h1} from "../../jtml.js";
+
+            body(
+                h1("Checkbox + Button Binding"),
+                div(
+                    div(`
+                        This software sold by weight, not volume. Do not read this text 
+                        under penalty of law. This sentence is false. All your base
+                        are belong to us.
+                    `).classes("drop-shadow").id("terms"),
+                    div(
+                        div (
+                            checkbox().bind("accepted"),
+                            "I accept the terms and conditions",
+                        ),
+                        button("Continue")
+                            .classes("drop-shadow")
+                            .enabled("accepted")
+                            .click(() => alert("Thanks!"))
+                    ),
+                )
+                    .classes("black-border rounded-corners centered-text")
+                    .styles({ "width" : "50%", "margin" : "auto"}),
+                a("..", "Directory of JTML Examples")
+
+            );
+            
+
+        </script>
+    </body>
+</html>

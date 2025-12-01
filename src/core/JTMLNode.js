@@ -2,8 +2,9 @@ import JTMLComponent from "./JTMLComponent.js";
 
 /**
 Class representing any single node in the hierarchy--a parallel, in other words,
-to the built-in DOM Node. Every JTMLNode contains a DOM node; concrete subclasses are responsible
-for taking in the constructor arguments and making a DOM node out of them.
+to the built-in DOM node. Every JTMLNode contains a DOM node; concrete subclasses are responsible
+for taking in the constructor arguments and making a DOM node out of them, by implementing the
+toDOMNode() method.
 **/
 export default class JTMLNode extends JTMLComponent {
 

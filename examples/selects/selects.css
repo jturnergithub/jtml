@@ -7,9 +7,32 @@
     width : 90px;
 }
 
-#switchable button {
-    display : block;
-    width   : 90px;
+#switchable {
+    width : 230px;
+}
+
+#switchable select {
+    width : 98%;
+}
+
+#act {
+    background-color : palegoldenrod;
+    font-size        : larger;
+    width            : 98%;
+    text-align       : center;
+}
+
+#act button {
+    width  : 20px;
+    margin : 5px;
+}
+
+#objects {
+    width : 320px;
+}
+
+#last-names {
+    width : 95%;
 }
 
 div.label {
